@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/wikia-img/:path*",
+      "destination": "/api/wikia-img?path=:path*"
+    },
+    {
+      "source": "/((?!api/|assets/|wikia-img/).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
