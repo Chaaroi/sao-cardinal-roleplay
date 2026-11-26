@@ -113,10 +113,22 @@ export const PRESET_GEMINI_MODELS: {
     desc: 'รุ่น 3.5 ประหยัดและตอบไว',
   },
   {
+    id: 'gemini-3.5-flash-lite',
+    label: 'Gemini 3.5 Flash-Lite',
+    generation: 'Gemini 3',
+    desc: 'รุ่น Lite โควตาสูงสุด เหมาะเวลาโมเดลอื่นเต็มหรือคนใช้เยอะ',
+  },
+  {
+    id: 'gemini-flash-latest',
+    label: 'Gemini Flash (Latest)',
+    generation: 'Gemini 3',
+    desc: 'ชี้ไปรุ่น Flash ล่าสุดอัตโนมัติ (แนะนำแทน 2.5)',
+  },
+  {
     id: 'gemini-2.5-flash',
-    label: 'Gemini 2.5 Flash',
+    label: 'Gemini 2.5 Flash (Legacy)',
     generation: 'Gemini 2.5',
-    desc: 'รุ่น 2.5 ประหยัดและตอบไว',
+    desc: 'รุ่นเก่า (คีย์ใหม่อาจถูกปิดใช้งานแล้ว — แนะนำใช้ 3.5 Lite / 3.8)',
   },
   {
     id: 'gemini-2.5-pro',

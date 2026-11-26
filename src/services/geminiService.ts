@@ -34,10 +34,13 @@ function rankGeminiModel(id: string): number {
   if (lower.startsWith('gemini-4')) return 80
   if (lower.includes('gemini-3.8-flash')) return 75
   if (lower.includes('gemini-3.6-flash')) return 70
-  if (lower.includes('gemini-3.5-flash') && !lower.includes('lite')) return 65
+  if (lower.includes('gemini-3.5-flash-lite')) return 68
+  if (lower.includes('gemini-3.5-flash')) return 65
+  if (lower.includes('gemini-flash-latest')) return 62
   if (lower.includes('gemini-3') && lower.includes('flash')) return 60
   if (lower.includes('gemini-3')) return 55
-  if (lower.includes('gemini-2.5-flash') && !lower.includes('lite')) return 50
+  if (lower.includes('gemini-2.5-flash-lite')) return 52
+  if (lower.includes('gemini-2.5-flash')) return 48
   if (lower.includes('gemini-2.5')) return 45
   if (lower.includes('flash')) return 30
   return 10
@@ -247,9 +250,14 @@ export async function sendCardinalTurn(options: SendTurnOptions): Promise<string
       rawMsg.includes('high demand') ||
       rawMsg.includes('overloaded')
 
+    const isQuotaError =
+      rawMsg.includes('429') ||
+      rawMsg.includes('quota') ||
+      rawMsg.includes('resource_exhausted')
+
     // Brief retry on temporary 503 spike before switching models
     if (isHighDemand && !signal?.aborted) {
-      await new Promise((r) => setTimeout(r, 900))
+      await new Promise((r) => setTimeout(r, 1200))
       if (!signal?.aborted) {
         try {
           if (onStreamText) onStreamText('')
@@ -262,17 +270,18 @@ export async function sendCardinalTurn(options: SendTurnOptions): Promise<string
 
     const isModelUnavailable =
       isHighDemand ||
+      isQuotaError ||
       rawMsg.includes('404') ||
       rawMsg.includes('not_found') ||
       rawMsg.includes('is not found') ||
       rawMsg.includes('403') ||
       rawMsg.includes('permission_denied')
 
-    // Auto-discover available models for this API key and retry with the top working models
+    // Auto-discover available models for this API key (including Lite models) and retry
     if (isModelUnavailable) {
       try {
         const available = await listAvailableGeminiModels(apiKey)
-        const candidates = available.filter((id) => id !== model).slice(0, 3)
+        const candidates = available.filter((id) => id !== model).slice(0, 6)
         for (const candidate of candidates) {
           if (signal?.aborted) break
           try {
