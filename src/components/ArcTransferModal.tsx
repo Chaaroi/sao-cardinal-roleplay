@@ -204,7 +204,9 @@ export function ArcTransferModal({
             {selectedSource && (
               <div>
                 <label className="font-hud block text-xs font-semibold tracking-[0.12em] text-slate-300 uppercase">
-                  2. เลือกภาคปลายทาง (Aincrad ↔ Progressive ข้ามหากันไม่ได้)
+                  {selectedSource.profile.storyMode === 'romance'
+                    ? '2. เลือกโลก VR ที่จะเข้าไปเล่นด้วยกัน (พกความสัมพันธ์ & สิทธิ์พิเศษจากโหมดจีบไปด้วย)'
+                    : '2. เลือกภาคปลายทาง (Aincrad ↔ Progressive ข้ามหากันไม่ได้)'}
                 </label>
                 <div className="mt-2 grid gap-2.5 sm:grid-cols-2">
                   {ALL_WORLD_ARCS.map((arc) => {

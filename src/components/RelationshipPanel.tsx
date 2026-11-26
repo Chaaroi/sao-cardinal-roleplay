@@ -1,6 +1,28 @@
 import { useState } from 'react'
-import { Crown, Gift, Heart, Sparkles, UserPlus, Users } from 'lucide-react'
-import type { CharacterState, InventoryItem } from '../types/game'
+import {
+  ArrowRightLeft,
+  BookOpen,
+  ChevronDown,
+  ChevronUp,
+  Crown,
+  Gift,
+  Heart,
+  Lock,
+  Sparkles,
+  Store,
+  UserPlus,
+  Users,
+  Zap,
+} from 'lucide-react'
+import { resolveCompanionPerk } from '../data/romanceRoster'
+import type {
+  CharacterState,
+  CompanionPerkDefinition,
+  InventoryItem,
+  RomanceCharacterProfile,
+  StoryMode,
+  WorldArc,
+} from '../types/game'
 import { CharacterAvatar } from './CharacterAvatar'
 
 interface RelationshipPanelProps {
@@ -8,8 +30,13 @@ interface RelationshipPanelProps {
   inSceneNames: string[]
   partyMembers: string[]
   inventory: InventoryItem[]
+  storyMode?: StoryMode
+  romanceTarget?: RomanceCharacterProfile | null
+  targetArc?: WorldArc
   isLoading: boolean
   onQuickAction: (prompt: string) => void
+  onActivatePerk?: (characterName: string, perk: CompanionPerkDefinition) => void
+  onOpenTransfer?: () => void
 }
 
 export function RelationshipPanel({
@@ -17,10 +44,16 @@ export function RelationshipPanel({
   inSceneNames,
   partyMembers,
   inventory,
+  storyMode,
+  romanceTarget,
+  targetArc,
   isLoading,
   onQuickAction,
+  onActivatePerk,
+  onOpenTransfer,
 }: RelationshipPanelProps) {
   const [giftTarget, setGiftTarget] = useState<string | null>(null)
+  const [showWikiSheet, setShowWikiSheet] = useState(true)
   const characters = Object.values(knownCharacters).sort((a, b) => {
     if (a.is_married !== b.is_married) return a.is_married ? -1 : 1
     const aInScene = inSceneNames.includes(a.name) ? 1 : 0
@@ -31,35 +64,69 @@ export function RelationshipPanel({
 
   if (characters.length === 0) {
     return (
-      <div className="sao-panel rounded-md p-5 text-center">
-        <Users className="mx-auto h-6 w-6 text-slate-500" />
-        <h3 className="font-hud mt-2 text-xs font-bold tracking-[0.14em] text-slate-300 uppercase">
-          Relationship &amp; Romance
-        </h3>
-        <p className="mt-1 text-[11px] text-slate-500">
-          ยังไม่มีข้อมูลตัวละคร พูดคุยหรือพบปะ NPC ในเนื้อเรื่องเพื่อปลดล็อก
+      <div className="py-12 text-center">
+        <Users className="mx-auto h-6 w-6 text-slate-600" />
+        <p className="mt-2.5 text-xs text-slate-400">
+          ยังไม่มีข้อมูลตัวละคร พูดคุยหรือพบปะผู้คนในเนื้อเรื่องเพื่อบันทึกความสัมพันธ์
         </p>
       </div>
     )
   }
 
   return (
-    <div className="sao-panel flex flex-col gap-3 rounded-md p-4">
-      <div className="flex items-center justify-between border-b border-slate-200/12 pb-2.5">
-        <div className="flex items-center gap-2">
-          <Heart className="h-3.5 w-3.5 text-rose-400" />
-          <h3 className="font-hud text-xs font-bold tracking-[0.14em] text-slate-200 uppercase">
-            Relationships ({characters.length})
-          </h3>
-        </div>
-        <span className="text-[10px] text-slate-500">900+ ขอแต่งงานได้</span>
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center justify-between text-[11px] text-slate-400">
+        <span>พบแล้ว {characters.length} คน</span>
+        <span>{storyMode === 'romance' ? 'ความสนิท 500+ ปลดล็อกสิทธิ์พิเศษ' : '900+ ขอแต่งงานได้'}</span>
       </div>
 
-      <div className="max-h-[380px] space-y-2.5 overflow-y-auto pr-1">
+      {/* Romance Mode Wiki Profile & Dive-Into-Game Banner */}
+      {storyMode === 'romance' && romanceTarget && (
+        <div className="rounded border border-rose-400/25 bg-rose-500/[0.05] p-2.5 text-[11px]">
+          <div className="flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => setShowWikiSheet((v) => !v)}
+              className="flex items-center gap-1.5 font-semibold text-rose-200"
+            >
+              <BookOpen className="h-3.5 w-3.5 text-[#e3a024]" />
+              <span>ข้อมูล Wiki ของ {romanceTarget.name}</span>
+              {showWikiSheet ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+            </button>
+            {onOpenTransfer && (
+              <button
+                type="button"
+                onClick={onOpenTransfer}
+                className="flex items-center gap-1 rounded border border-[#e3a024]/50 bg-[#e3a024]/15 px-2 py-0.5 text-[10px] font-semibold text-[#f0c05e] transition hover:bg-[#e3a024]/25"
+              >
+                <ArrowRightLeft className="h-3 w-3" />
+                เข้าเกม {targetArc ? `(${targetArc})` : ''}
+              </button>
+            )}
+          </div>
+
+          {showWikiSheet && (
+            <div className="mt-2 space-y-1 border-t border-rose-300/15 pt-2 text-[10px] leading-relaxed text-slate-300">
+              <div>
+                <strong className="text-rose-200">รักเป็นพิเศษ:</strong> {romanceTarget.loves.slice(0, 2).join(', ')}
+              </div>
+              <div>
+                <strong className="text-emerald-300">ชอบ:</strong> {romanceTarget.likes.slice(0, 2).join(', ')}
+              </div>
+              <div>
+                <strong className="text-slate-400">ไม่ชอบ:</strong> {romanceTarget.dislikes.slice(0, 2).join(', ')}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="space-y-2.5">
         {characters.map((char) => {
           const inScene = inSceneNames.includes(char.name)
           const inParty = partyMembers.includes(char.name) || char.in_party
           const canPropose = (char.can_propose || char.affection >= 900) && !char.is_married
+          const resolvedPerk = resolveCompanionPerk(char, romanceTarget)
           const progressPct = Math.max(0, Math.min(100, ((char.affection + 100) / 1100) * 100))
 
           const gaugeColor = char.is_married
@@ -198,6 +265,32 @@ export function RelationshipPanel({
                     <Sparkles className="h-3 w-3" />
                     ขอแต่งงาน (Propose)
                   </button>
+                )}
+
+                {resolvedPerk && (
+                  resolvedPerk.unlocked ? (
+                    <button
+                      type="button"
+                      disabled={isLoading}
+                      onClick={() => onActivatePerk?.(char.name, resolvedPerk.perk)}
+                      title={resolvedPerk.perk.description}
+                      className="flex w-full items-center justify-center gap-1.5 rounded border border-[#e3a024]/60 bg-[#e3a024]/15 px-2.5 py-1.5 text-[11px] font-semibold text-[#f0c05e] transition hover:bg-[#e3a024]/25 disabled:opacity-45"
+                    >
+                      {resolvedPerk.perk.actionType === 'shop' ? (
+                        <Store className="h-3.5 w-3.5 text-[#e3a024]" />
+                      ) : (
+                        <Zap className="h-3.5 w-3.5 text-[#e3a024]" />
+                      )}
+                      สิทธิ์พิเศษ: {resolvedPerk.perk.shortLabel}
+                    </button>
+                  ) : (
+                    <div className="flex w-full items-center gap-1.5 rounded border border-slate-300/10 bg-white/[0.02] px-2 py-1 text-[10px] text-slate-500">
+                      <Lock className="h-3 w-3 shrink-0" />
+                      <span className="truncate">
+                        ความสนิท {resolvedPerk.requiredAffection}+ ปลดล็อก: {resolvedPerk.perk.shortLabel}
+                      </span>
+                    </div>
+                  )
                 )}
               </div>
 

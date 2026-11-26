@@ -48,6 +48,8 @@ export function SettingsModal({
   const [fastMode, setFastMode] = useState(settings.fastMode)
   const [autoEventImages, setAutoEventImages] = useState(settings.autoEventImages)
   const [imageModel, setImageModel] = useState(settings.imageModel)
+  const [ostEnabled, setOstEnabled] = useState(settings.ostEnabled)
+  const [ostVolume, setOstVolume] = useState(settings.ostVolume)
   const [showKey, setShowKey] = useState(false)
   const [fetchedModels, setFetchedModels] = useState<string[]>([])
   const [fetchingModels, setFetchingModels] = useState(false)
@@ -77,6 +79,8 @@ export function SettingsModal({
       fastMode,
       autoEventImages,
       imageModel: imageModel.trim() || 'auto',
+      ostEnabled,
+      ostVolume,
     })
     onClose()
   }
@@ -286,6 +290,40 @@ export function SettingsModal({
                 <option value="gemini-3-pro-image">gemini-3-pro-image (ต้องเปิด Billing บน Gemini)</option>
                 <option value="imagen-4.0-generate-001">imagen-4.0-generate-001 (ต้องเปิด Billing บน Gemini)</option>
               </select>
+            </div>
+          )}
+
+          <label className="flex cursor-pointer items-center justify-between rounded-md border border-slate-300/15 bg-[#0b1018] px-4 py-3">
+            <div>
+              <div className="text-xs font-bold text-[#f0c05e]">
+                เปิดเพลงประกอบ SAO OST อัตโนมัติตามสถานการณ์
+              </div>
+              <div className="text-[11px] text-slate-400">
+                เปลี่ยนเพลงอัตโนมัติตามฉากเมือง, ต่อสู้, ร้านค้า, ออกเดต หรือฉากวิกฤต (ปรับระดับเสียงและเปิด-ปิดจากแถบด้านบนได้ตลอดเวลา)
+              </div>
+            </div>
+            <input
+              type="checkbox"
+              checked={ostEnabled}
+              onChange={(e) => setOstEnabled(e.target.checked)}
+              className="h-4 w-4 accent-[#e3a024]"
+            />
+          </label>
+
+          {ostEnabled && (
+            <div className="rounded-md border border-slate-300/15 bg-[#0b1018] px-4 py-2.5">
+              <div className="flex items-center justify-between text-[11px] text-slate-300">
+                <span>ระดับเสียง SAO OST</span>
+                <span className="font-hud font-bold text-[#f0c05e]">{ostVolume}%</span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={ostVolume}
+                onChange={(e) => setOstVolume(Number(e.target.value))}
+                className="mt-1.5 h-1.5 w-full cursor-pointer accent-[#e3a024]"
+              />
             </div>
           )}
 

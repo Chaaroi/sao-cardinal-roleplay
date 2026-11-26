@@ -20,6 +20,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   fastMode: true,
   autoEventImages: true,
   imageModel: 'auto',
+  ostEnabled: true,
+  ostVolume: 45,
 }
 
 export function loadSettings(): AppSettings {
@@ -34,6 +36,11 @@ export function loadSettings(): AppSettings {
       fastMode: parsed.fastMode !== undefined ? Boolean(parsed.fastMode) : true,
       autoEventImages: parsed.autoEventImages !== undefined ? Boolean(parsed.autoEventImages) : true,
       imageModel: typeof parsed.imageModel === 'string' && parsed.imageModel.trim() ? parsed.imageModel.trim() : 'auto',
+      ostEnabled: parsed.ostEnabled !== undefined ? Boolean(parsed.ostEnabled) : true,
+      ostVolume:
+        typeof parsed.ostVolume === 'number' && parsed.ostVolume >= 0 && parsed.ostVolume <= 100
+          ? Math.round(parsed.ostVolume)
+          : 45,
     }
   } catch {
     return DEFAULT_SETTINGS
@@ -141,38 +148,137 @@ const ARC_DEFAULTS: Record<WorldArc, { arc: string; location: string; date: stri
 
 export function createInitialSession(profile: PlayerProfile): GameSession {
   const defaults = ARC_DEFAULTS[profile.startingArc]
-  const initialWorldState: WorldState = {
-    world_arc: defaults.arc,
-    location: defaults.location,
-    in_game_date: defaults.date,
-    canon_divergence:
-      profile.storyMode === 'canon'
-        ? 'Low (0% - ตามเส้นเรื่องหลัก)'
-        : 'Sandbox AU (อิสระเต็มรูปแบบ)',
-    player: {
-      level: 1,
-      hp: 250,
-      max_hp: 250,
-      col: 500,
-      status_effects: [],
-      inventory_changes: [],
-      spouse: null,
-    },
-    characters_in_scene: [],
-    system_alerts: [`LINK START! ยินดีต้อนรับ ${profile.name} สู่ ${defaults.arc}`],
-    marriage_event_triggered: false,
-    marriage_partner: null,
+  const isRomanceMode = profile.storyMode === 'romance'
+  const romanceTarget = isRomanceMode ? profile.romanceTarget ?? null : null
+  const preGameBonds = !isRomanceMode ? profile.preGameBonds ?? [] : []
+
+  // Build initial knownCharacters & party from Romance Mode target or carried Pre-Game Bonds
+  const initialKnownCharacters: GameSession['knownCharacters'] = {}
+  const initialPartyMembers: string[] = []
+  const initialButterflyEffects: string[] = []
+  let initialSpouse: string | null = null
+
+  if (isRomanceMode && romanceTarget) {
+    initialKnownCharacters[romanceTarget.name] = {
+      name: romanceTarget.name,
+      affection: 150,
+      affection_delta: '0',
+      relationship_tier: 'Friend',
+      mood: 'Curious',
+      is_married: false,
+      can_propose: false,
+      last_seen_location: romanceTarget.realWorldSetting,
+    }
+  } else if (preGameBonds.length > 0) {
+    for (const bond of preGameBonds) {
+      initialKnownCharacters[bond.characterName] = {
+        name: bond.characterName,
+        affection: bond.affection,
+        affection_delta: '0',
+        relationship_tier: bond.relationship_tier,
+        mood: bond.is_married ? 'Affectionate' : bond.affection >= 500 ? 'Warm & Close' : 'Friendly',
+        is_married: bond.is_married,
+        can_propose: bond.affection >= 900 && !bond.is_married,
+        in_party: bond.affection >= 400 || bond.is_married,
+        last_seen_location: `Real World (${bond.sourceArc})`,
+      }
+      if (bond.affection >= 400 || bond.is_married) {
+        initialPartyMembers.push(bond.characterName)
+      }
+      if (bond.is_married && !initialSpouse) {
+        initialSpouse = bond.characterName
+      }
+      initialButterflyEffects.push(
+        `Pre-Game Bond: รู้จักและผูกพันกับ ${bond.characterName} (${bond.relationship_tier}, Affection ${bond.affection}) มาก่อนในโลกจริง ก่อนล็อกอินเข้าสู่ ${defaults.arc} ด้วยกัน`
+      )
+    }
   }
 
-  const starterItems: InventoryItem[] = [
-    { name: profile.weapon, quantity: 1, category: 'equipment' },
-    { name: 'Healing Potion (Minor)', quantity: 3, category: 'consumable' },
-    { name: 'Teleport Crystal', quantity: 1, category: 'consumable' },
-    { name: 'Black Bread', quantity: 2, category: 'consumable' },
-  ]
+  const initialWorldState: WorldState = isRomanceMode && romanceTarget
+    ? {
+        world_arc: 'Real World (Pre-Dive Dating)',
+        location: romanceTarget.realWorldSetting,
+        in_game_date: '2022-10-15 16:00',
+        canon_divergence: `Romance Route (${romanceTarget.name}) — ก่อนเข้าสู่ ${defaults.arc}`,
+        player: {
+          level: 1,
+          hp: 250,
+          max_hp: 250,
+          col: 500,
+          status_effects: ['Pre-Game Dating Mode'],
+          inventory_changes: [],
+          spouse: null,
+        },
+        characters_in_scene: [initialKnownCharacters[romanceTarget.name]],
+        system_alerts: [
+          `ROMANCE MODE: เริ่มทำความรู้จักและสานสัมพันธ์กับ ${romanceTarget.name} ในโลกจริง!`,
+        ],
+        marriage_event_triggered: false,
+        marriage_partner: null,
+      }
+    : {
+        world_arc: defaults.arc,
+        location: defaults.location,
+        in_game_date: defaults.date,
+        canon_divergence:
+          profile.storyMode === 'canon'
+            ? 'Low (0% - ตามเส้นเรื่องหลัก)'
+            : 'Sandbox AU (อิสระเต็มรูปแบบ)',
+        player: {
+          level: 1,
+          hp: 250,
+          max_hp: 250,
+          col: 500,
+          status_effects: preGameBonds.some((b) => b.perkUnlocked)
+            ? ['Pre-Game Companion Bond Active']
+            : [],
+          inventory_changes: [],
+          spouse: initialSpouse,
+        },
+        characters_in_scene: Object.values(initialKnownCharacters),
+        system_alerts: [
+          `LINK START! ยินดีต้อนรับ ${profile.name} สู่ ${defaults.arc}`,
+          ...(preGameBonds.length > 0
+            ? [
+                `เชื่อมต่อความสัมพันธ์ก่อนเข้าเกมกับ ${preGameBonds.map((b) => b.characterName).join(', ')} สำเร็จ!`,
+              ]
+            : []),
+        ],
+        marriage_event_triggered: false,
+        marriage_partner: initialSpouse,
+      }
 
-  const originRoute =
-    profile.startingArc === 'Aincrad (Floor 1)'
+  const starterItems: InventoryItem[] = isRomanceMode
+    ? [
+        {
+          name: 'Smartphone & Contact ID',
+          quantity: 1,
+          category: 'special',
+          description: 'สมาร์ตโฟนสำหรับติดต่อ นัดเดต และพูดคุยกับตัวละครในโลกจริงก่อนเข้าเกม',
+        },
+        {
+          name: 'Handmade Sweet Box',
+          quantity: 1,
+          category: 'consumable',
+          description: 'กล่องขนมหวานสำหรับมอบเป็นของขวัญระหว่างออกเดต',
+        },
+        {
+          name: 'Gift Voucher / Bouquet',
+          quantity: 1,
+          category: 'special',
+          description: 'ของขวัญแทนใจสำหรับโอกาสพิเศษในโลกจริง',
+        },
+      ]
+    : [
+        { name: profile.weapon, quantity: 1, category: 'equipment' },
+        { name: 'Healing Potion (Minor)', quantity: 3, category: 'consumable' },
+        { name: 'Teleport Crystal', quantity: 1, category: 'consumable' },
+        { name: 'Black Bread', quantity: 2, category: 'consumable' },
+      ]
+
+  const originRoute = isRomanceMode
+    ? null
+    : profile.startingArc === 'Aincrad (Floor 1)'
       ? 'Aincrad (Floor 1)'
       : profile.startingArc === 'Progressive'
         ? 'Progressive'
@@ -182,16 +288,18 @@ export function createInitialSession(profile: PlayerProfile): GameSession {
     id: `sao-${Date.now()}`,
     profile,
     originRoute,
-    arcHistory: [profile.startingArc],
+    arcHistory: isRomanceMode ? [] : [profile.startingArc],
+    romanceTarget,
+    preGameBonds,
     characterStats: createInitialStatState(profile.weapon),
-    equippedItems: [profile.weapon],
+    equippedItems: isRomanceMode ? [] : [profile.weapon],
     worldState: initialWorldState,
-    knownCharacters: {},
+    knownCharacters: initialKnownCharacters,
     inventory: starterItems,
     sharedInventory: [],
     sharedHome: null,
-    partyMembers: [],
-    butterflyEffects: [],
+    partyMembers: initialPartyMembers,
+    butterflyEffects: initialButterflyEffects,
     messages: [],
     updatedAt: Date.now(),
   }

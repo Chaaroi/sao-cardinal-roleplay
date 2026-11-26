@@ -1,3 +1,4 @@
+import { findRomancePreset } from '../data/romanceRoster'
 import type {
   CharacterState,
   DiceChallenge,
@@ -38,11 +39,14 @@ export function extractChoicesFromNarrative(narrative: string): string[] {
     const match = line.match(/^(?:\d+[.)]|[-*•])\s+(?:\*\*)?(.+?)(?:\*\*)?$/)
     if (match && match[1]) {
       const cleaned = match[1].replace(/\*\*/g, '').trim()
+      const lowerCleaned = cleaned.toLowerCase()
       if (
         cleaned.length >= 4 &&
         cleaned.length <= 160 &&
         !cleaned.startsWith('หมายเหตุ') &&
-        !cleaned.toLowerCase().includes('json_state')
+        !lowerCleaned.includes('json_state') &&
+        !cleaned.includes('พิมพ์การกระทำหรือบทสนทนา') &&
+        !cleaned.includes('พิมพ์คำสั่งเอง')
       ) {
         choices.push(cleaned)
       }
@@ -335,6 +339,30 @@ function inferItemCategory(name: string): InventoryItem['category'] {
   return 'special'
 }
 
+function resolveCanonicalCharacterKey(
+  rawName: string,
+  existing: Record<string, CharacterState>
+): string {
+  const trimmed = rawName.trim()
+  if (existing[trimmed]) return trimmed
+
+  const stripped = trimmed.replace(/\s*\(.*?\)\s*/g, '').trim()
+  if (stripped && existing[stripped]) return stripped
+
+  const preset = findRomancePreset(trimmed) ?? (stripped ? findRomancePreset(stripped) : undefined)
+  if (preset && existing[preset.name]) return preset.name
+
+  const lowerStripped = stripped.toLowerCase()
+  for (const existingKey of Object.keys(existing)) {
+    const existingStripped = existingKey.replace(/\s*\(.*?\)\s*/g, '').trim().toLowerCase()
+    if (existingStripped && existingStripped === lowerStripped) {
+      return existingKey
+    }
+  }
+
+  return preset?.name ?? (stripped || trimmed)
+}
+
 export function mergeKnownCharacters(
   existing: Record<string, CharacterState>,
   sceneChars: CharacterState[],
@@ -342,10 +370,12 @@ export function mergeKnownCharacters(
 ): Record<string, CharacterState> {
   const next = { ...existing }
   for (const char of sceneChars) {
-    const prev = next[char.name]
-    next[char.name] = {
+    const canonicalName = resolveCanonicalCharacterKey(char.name, next)
+    const prev = next[canonicalName]
+    next[canonicalName] = {
       ...prev,
       ...char,
+      name: canonicalName,
       in_party: char.in_party ?? prev?.in_party ?? false,
       last_seen_location: currentLocation,
     }

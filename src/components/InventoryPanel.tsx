@@ -115,9 +115,9 @@ export function InventoryPanel({
   const activeCat = CATEGORY_LABELS[activeItem?.category ?? 'special']
 
   return (
-    <div className="sao-panel rounded-md p-4">
-      {/* Tab Switcher */}
-      <div className="grid grid-cols-3 gap-1 rounded border border-slate-300/12 bg-[#0b1018] p-1">
+    <div className="space-y-3">
+      {/* Sub-Section Switcher */}
+      <div className="grid grid-cols-3 gap-1 border-b border-white/[0.08] pb-2">
         <button
           type="button"
           onClick={() => setTab('inventory')}
@@ -168,7 +168,7 @@ export function InventoryPanel({
             </span>
           </div>
 
-          <div className="max-h-44 space-y-1.5 overflow-y-auto pr-1">
+          <div className="space-y-1.5">
             {inventory.length === 0 ? (
               <p className="py-4 text-center text-xs text-slate-500">กระเป๋าว่างเปล่า</p>
             ) : (

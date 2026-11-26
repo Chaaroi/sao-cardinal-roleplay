@@ -304,7 +304,17 @@ export function extractWikiTopicsFromTurn(userText: string, session: GameSession
   const topics = new Set<string>()
   const combined = `${userText} ${session.worldState.location} ${session.worldState.world_arc}`
 
-  // 1. Characters currently in scene
+  // 1. Romance target or Pre-Game bonded characters
+  if (session.romanceTarget?.wikiTitle) {
+    topics.add(session.romanceTarget.wikiTitle)
+  }
+  if (session.preGameBonds && session.preGameBonds.length > 0) {
+    for (const bond of session.preGameBonds.slice(0, 2)) {
+      topics.add(bond.wikiTitle || bond.characterName)
+    }
+  }
+
+  // 2. Characters currently in scene
   for (const ch of session.worldState.characters_in_scene.slice(0, 2)) {
     topics.add(ch.name)
   }
@@ -374,4 +384,65 @@ export function formatWikiLoreForPrompt(entries: WikiLoreEntry[]): string {
   if (entries.length === 0) return ''
   const lines = entries.map((e) => `- **${e.title}**: ${e.summary}`)
   return `[SAO FANDOM WIKI REFERENCE - https://swordartonline.fandom.com]\n${lines.join('\n')}`
+}
+
+/**
+ * Fetches full character lead + Personality / Trivia section from SAO Fandom Wiki
+ * for accurate Likes / Dislikes / Personality fidelity in Romance Mode.
+ */
+export async function fetchCharacterWikiProfile(
+  wikiTitleOrName: string
+): Promise<{ entry: WikiLoreEntry; personalitySnippet: string } | null> {
+  const clean = wikiTitleOrName.trim()
+  if (!clean) return null
+
+  try {
+    const pageUrl = `${WIKI_API}?action=query&titles=${encodeURIComponent(
+      clean
+    )}&prop=revisions|pageimages&rvprop=content&rvslots=main&pithumbsize=240&redirects=1&format=json&origin=*`
+    const res = await fetchWithTimeout(pageUrl, 4000)
+    if (!res.ok) return null
+
+    const data = (await res.json()) as {
+      query?: {
+        pages?: Record<
+          string,
+          {
+            missing?: boolean
+            title?: string
+            thumbnail?: { source?: string }
+            revisions?: { slots?: { main?: { '*'?: string } } }[]
+          }
+        >
+      }
+    }
+
+    const page = Object.values(data.query?.pages ?? {}).find((p) => !p.missing && p.title)
+    if (!page || !page.title) {
+      const resolved = await resolveWikiTopic(clean)
+      return resolved ? { entry: resolved, personalitySnippet: resolved.summary } : null
+    }
+
+    const rawWikitext = page.revisions?.[0]?.slots?.main?.['*'] ?? ''
+    const leadSummary = cleanWikitextToSummary(rawWikitext)
+    const personalityMatch = rawWikitext.match(
+      /==\s*(?:Personality|Traits|Background)\s*==([\s\S]*?)(?:\n==[^=]|$)/i
+    )
+    const personalityRaw = personalityMatch?.[1] ?? ''
+    const personalityClean = stripWikiMarkup(personalityRaw).slice(0, 650).trim()
+
+    const entry: WikiLoreEntry = {
+      title: page.title,
+      summary: leadSummary || personalityClean,
+      url: buildWikiPageUrl(page.title),
+      thumbnailUrl: toSafeThumbnailUrl(page.thumbnail?.source),
+    }
+
+    return {
+      entry,
+      personalitySnippet: personalityClean || leadSummary,
+    }
+  } catch {
+    return null
+  }
 }

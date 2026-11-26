@@ -103,6 +103,7 @@ const TARGET_ARC_DEFAULTS: Record<
  * preserving the strict lock between Aincrad (2022 Canon) and Progressive (Floor-by-Floor).
  */
 export function getOriginRoute(session: GameSession): 'Aincrad (Floor 1)' | 'Progressive' | null {
+  if (session.profile.storyMode === 'romance') return null
   if (session.originRoute) return session.originRoute
   if (session.profile.startingArc === 'Aincrad (Floor 1)') return 'Aincrad (Floor 1)'
   if (session.profile.startingArc === 'Progressive') return 'Progressive'
@@ -120,6 +121,7 @@ export interface ArcEligibilityResult {
 
 /**
  * Enforces save-transfer rules:
+ * - Pre-Game Romance Mode saves can dive into ANY starting VR World Arc together!
  * - Aincrad (2022 Canon) <-> Progressive (Floor-by-Floor) are mutually exclusive starting routes.
  * - Cannot transfer to the exact current arc.
  * - Aincrad / Progressive saves smoothly transfer forward to ALfheim Online (and later arcs).
@@ -128,6 +130,13 @@ export function getArcTransferEligibility(
   session: GameSession,
   targetArc: WorldArc
 ): ArcEligibilityResult {
+  if (session.profile.storyMode === 'romance') {
+    return {
+      allowed: true,
+      recommended: targetArc === session.profile.startingArc,
+    }
+  }
+
   const currentArc = session.profile.startingArc
   const originRoute = getOriginRoute(session)
 
@@ -184,8 +193,14 @@ export function createTransferredSession(
 ): GameSession {
   const defaults = TARGET_ARC_DEFAULTS[targetArc]
   const weaponToUse = newWeapon ?? source.profile.weapon
-  const originRoute = getOriginRoute(source)
-  const prevHistory = source.arcHistory ?? [source.profile.startingArc]
+  const fromRomance = source.profile.storyMode === 'romance'
+  const originRoute =
+    fromRomance
+      ? targetArc === 'Aincrad (Floor 1)' || targetArc === 'Progressive'
+        ? targetArc
+        : null
+      : getOriginRoute(source)
+  const prevHistory = source.arcHistory ?? (fromRomance ? [] : [source.profile.startingArc])
   const nextHistory = prevHistory.includes(targetArc) ? prevHistory : [...prevHistory, targetArc]
 
   // Preserve special/ring/key keepsakes from previous arc, plus new arc starter kit
@@ -210,9 +225,13 @@ export function createTransferredSession(
 
   // Deep-clone knownCharacters and mark them ready to be encountered in the new world
   const carriedCharacters: GameSession['knownCharacters'] = {}
+  const nextPartySet = new Set(source.partyMembers)
   for (const [k, char] of Object.entries(source.knownCharacters)) {
+    const inParty = Boolean(char.in_party) || (fromRomance && (char.affection >= 400 || char.is_married))
+    if (inParty) nextPartySet.add(char.name)
     carriedCharacters[k] = {
       ...char,
+      in_party: inParty,
       affection_delta: '0',
       last_seen_location: `${source.worldState.world_arc} (Carried Over)`,
     }
@@ -220,7 +239,9 @@ export function createTransferredSession(
 
   const carriedButterfly = [
     ...source.butterflyEffects,
-    `World Transfer: ย้ายตัวละครจาก ${source.worldState.world_arc} เข้าสู่ ${targetArc}`,
+    fromRomance
+      ? `Pre-Game Romance Dive: รู้จักและสานสัมพันธ์จากโลกจริงก่อนล็อกอินเข้าสู่ ${targetArc} ด้วยกัน`
+      : `World Transfer: ย้ายตัวละครจาก ${source.worldState.world_arc} เข้าสู่ ${targetArc}`,
   ]
 
   const spouse = source.worldState.player.spouse
@@ -235,30 +256,41 @@ export function createTransferredSession(
     id: `sao-${Date.now()}`,
     profile: {
       ...source.profile,
+      storyMode: fromRomance ? 'canon' : source.profile.storyMode,
+      romanceTarget: null,
+      preGameBonds: source.preGameBonds,
       weapon: weaponToUse,
       startingArc: targetArc,
     },
     originRoute,
     arcHistory: nextHistory,
+    romanceTarget: null,
+    preGameBonds: source.preGameBonds,
     characterStats: carriedStats,
     equippedItems: [weaponToUse],
     worldState: {
       world_arc: defaults.arc,
       location: defaults.location,
       in_game_date: defaults.date,
-      canon_divergence: source.worldState.canon_divergence,
+      canon_divergence: fromRomance ? 'Low (Pre-Game Romance Bond Active)' : source.worldState.canon_divergence,
       player: {
         level: source.worldState.player.level,
         hp: source.worldState.player.max_hp,
         max_hp: source.worldState.player.max_hp,
         col: source.worldState.player.col,
-        status_effects: spouse ? ['The Seed Account Transfer', 'Marriage Bond'] : ['The Seed Account Transfer'],
+        status_effects: spouse
+          ? ['The Seed Account Transfer', 'Marriage Bond']
+          : fromRomance
+            ? ['Pre-Game Companion Bond']
+            : ['The Seed Account Transfer'],
         inventory_changes: [],
         spouse,
       },
-      characters_in_scene: [],
+      characters_in_scene: fromRomance ? Object.values(carriedCharacters) : [],
       system_alerts: [
-        `WORLD TRANSFER COMPLETE: ย้ายเซฟเข้าสู่ ${targetArc} สำเร็จ!`,
+        fromRomance
+          ? `LINK START TOGETHER! เข้าสู่ ${targetArc} พร้อมความสัมพันธ์จากโหมดจีบตัวละครสำเร็จ!`
+          : `WORLD TRANSFER COMPLETE: ย้ายเซฟเข้าสู่ ${targetArc} สำเร็จ!`,
         `โอนย้ายความสัมพันธ์ตัวละคร ${Object.keys(carriedCharacters).length} คนเรียบร้อย`,
       ],
       marriage_event_triggered: false,
@@ -269,7 +301,7 @@ export function createTransferredSession(
     inventory: Array.from(mergedInvMap.values()),
     sharedInventory: [...source.sharedInventory],
     sharedHome: source.sharedHome,
-    partyMembers: [...source.partyMembers],
+    partyMembers: Array.from(nextPartySet),
     butterflyEffects: carriedButterfly,
     messages: [],
     updatedAt: Date.now(),

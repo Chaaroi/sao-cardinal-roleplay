@@ -3,11 +3,8 @@
 @layer base {
   body {
     font-family: 'IBM Plex Sans Thai', -apple-system, BlinkMacSystemFont, sans-serif;
-    background-color: #0d131c;
-    background-image:
-      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(186, 210, 235, 0.12) 0%, transparent 70%),
-      radial-gradient(circle at 85% 85%, rgba(227, 160, 36, 0.05) 0%, transparent 45%),
-      linear-gradient(180deg, #0d131c 0%, #111926 100%);
+    background-color: #0b1017;
+    background-image: linear-gradient(180deg, #0b1017 0%, #0f1621 100%);
     min-height: 100vh;
     overflow-x: hidden;
   }
@@ -22,15 +19,11 @@
   font-family: 'Rajdhani', 'IBM Plex Sans Thai', sans-serif;
 }
 
-/* Authentic SAO Smoke-Glass Window (clean hairline border, subtle frosted depth, no neon slop) */
+/* Crisp Architectural Game Window */
 .sao-panel {
-  background: linear-gradient(180deg, rgba(24, 32, 46, 0.88) 0%, rgba(16, 22, 33, 0.92) 100%);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(226, 232, 240, 0.14);
-  box-shadow:
-    0 12px 32px rgba(0, 0, 0, 0.42),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  background: #101722;
+  border: 1px solid rgba(226, 232, 240, 0.12);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
 }
 
 .sao-panel-light {

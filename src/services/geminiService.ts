@@ -314,6 +314,114 @@ async function generateDemoCardinalResponse(
   const lowerMsg = userMessage.toLowerCase()
 
   if (isOpening) {
+    // 1. Pre-Game Romance Mode Opening (Real World before entering VRMMO)
+    const target = session.romanceTarget ?? session.profile.romanceTarget
+    if (session.profile.storyMode === 'romance' && target) {
+      const targetAff = session.knownCharacters[target.name]?.affection ?? 150
+      const realName = target.wikiTitle || target.name
+      return `แสงแดดยามเย็นสาดส่องลงมายัง **${target.realWorldSetting}** บรรยากาศหลังเลิกเรียนเงียบสงบและอบอวลด้วยกลิ่นชาอุ่นๆ
+
+ตรงหน้าคุณคือ **${realName}** ที่กำลังนั่งรออยู่ที่โต๊ะริมหน้าต่าง พอเห็นคุณเดินเข้ามา ดวงตาของเธอก็เป็นประกายก่อนจะรีบยกมือโบกทักทายพร้อมรอยยิ้มสดใส
+
+*"ทางนี้ๆ **${name}**! รออยู่ตั้งนานแน่ะ วันนี้อากาศดีจังเลยนะ... ว่าแต่นายสั่งอะไรหรือยัง?"*
+
+เธอเอียงคอเล็กน้อยขณะเลื่อนเมนูขนมหวานมาตรงหน้า แววตาเต็มไปด้วยความคาดหวังและเป็นกันเอง
+
+1. ทักทายพร้อมชวนคุยเรื่องขนมและเครื่องดื่มที่เธอชอบ
+2. หยิบ Handmade Sweet Box ออกมายื่นให้เป็นของฝาก
+3. ชวนคุยถึงเรื่องราวหลังเลิกเรียนและแผนวันหยุดสุดสัปดาห์
+4. ลองหยอดคำหวานหรือบอกความรู้สึกตรงๆ เพื่อดูปฏิกิริยาของเธอ
+
+\`\`\`json_state
+{
+  "world_arc": "Real World (Pre-Dive Dating)",
+  "location": "${target.realWorldSetting}",
+  "in_game_date": "2022-10-15 16:05",
+  "canon_divergence": "Romance Route (${target.name})",
+  "player": {
+    "level": 1,
+    "hp": 250,
+    "max_hp": 250,
+    "col": 500,
+    "status_effects": ["Pre-Game Dating Mode"],
+    "inventory_changes": [],
+    "spouse": null
+  },
+  "characters_in_scene": [
+    {
+      "name": "${target.name}",
+      "affection": ${targetAff},
+      "affection_delta": "0",
+      "relationship_tier": "Friend",
+      "mood": "Cheerful",
+      "is_married": false,
+      "can_propose": false
+    }
+  ],
+  "system_alerts": [
+    "Pre-Game Romance Mode: กำลังจีบ ${target.name} (อ้างอิงข้อมูล SAO Wiki)"
+  ],
+  "marriage_event_triggered": false,
+  "scene_image_prompt": null
+}
+\`\`\``
+    }
+
+    // 2. Starting a New Game WITH Pre-Game Bond(s) carried from Romance Mode
+    if (session.preGameBonds && session.preGameBonds.length > 0) {
+      const leadBond = session.preGameBonds[0]
+      const carriedListJson = JSON.stringify(
+        session.preGameBonds.map((b) => ({
+          name: b.characterName,
+          affection: b.affection,
+          affection_delta: '0',
+          relationship_tier: b.relationship_tier,
+          mood: b.is_married ? 'Blissful' : b.affection >= 500 ? 'Affectionate' : 'Cheerful',
+          is_married: b.is_married,
+          can_propose: b.affection >= 900 && !b.is_married,
+          in_party: b.affection >= 400 || b.is_married,
+        }))
+      )
+
+      return `เสียงกระดิ่งก้องกังวานไปทั่วจัตุรัสกลางเมือง (**${session.worldState.location}**) การเชื่อมต่อเข้าสู่ **${session.profile.startingArc}** เสร็จสมบูรณ์!
+
+เพราะคุณและ **${leadBond.characterName}** ได้ทำความรู้จัก${leadBond.affection >= 500 ? 'และตกลงคบหากัน' : ''}มาก่อนในโลกจริงแล้ว ทันทีที่แสง Link Start จางลง **${leadBond.characterName}** ก็รีบเดินตรงเข้ามาหาคุณพร้อมรอยยิ้มโล่งใจ!
+
+*"${name}! ทางนี้ๆ! นึกว่าจะคลาดกันตอนล็อกอินซะแล้ว... ดีจังเลยนะที่เราได้เข้ามาในโลกนี้ด้วยกันจริงๆ"*${
+        leadBond.perkUnlocked
+          ? `\n\n**[COMPANION PERK ACTIVE]** คุณสามารถกดใช้สิทธิ์พิเศษ **${leadBond.perkTitle}** ของ ${leadBond.characterName} ได้จากเมนู Relationships ด้านขวาตลอดการผจญภัยในเซฟนี้!`
+          : ''
+      }
+
+1. จับมือทักทาย ${leadBond.characterName} และออกสำรวจ ${session.worldState.location} ไปด้วยกัน
+2. ใช้สิทธิ์พิเศษคู่หูของ ${leadBond.characterName} หรือพูดคุยวางแผนเก็บเลเวล
+3. เดินชมเมืองและตรวจเช็กอุปกรณ์เริ่มต้น (${weapon})
+
+\`\`\`json_state
+{
+  "world_arc": "${session.worldState.world_arc}",
+  "location": "${session.worldState.location}",
+  "in_game_date": "${session.worldState.in_game_date}",
+  "canon_divergence": "${session.worldState.canon_divergence}",
+  "player": {
+    "level": 1,
+    "hp": 250,
+    "max_hp": 250,
+    "col": 500,
+    "status_effects": ${JSON.stringify(p.status_effects)},
+    "inventory_changes": [],
+    "spouse": ${p.spouse ? `"${p.spouse}"` : 'null'}
+  },
+  "characters_in_scene": ${carriedListJson},
+  "system_alerts": [
+    "เชื่อมต่อ Pre-Game Bond กับ ${leadBond.characterName} (${leadBond.relationship_tier}) เข้าสู่เซฟนี้สำเร็จ!"
+  ],
+  "marriage_event_triggered": false,
+  "scene_image_prompt": null
+}
+\`\`\``
+    }
+
     const isTransferred = (session.arcHistory?.length ?? 0) > 1
     if (isTransferred) {
       const carriedChars = Object.values(session.knownCharacters).slice(0, 4)
@@ -419,19 +527,28 @@ async function generateDemoCardinalResponse(
 
   // Handle Marriage Proposal in Demo Mode
   if (lowerMsg.includes('แต่งงาน') || lowerMsg.includes('propose') || lowerMsg.includes('แหวน')) {
-    const newAff = Math.max(950, currentAffection + 50)
-    return `[SYSTEM ALERT: Marriage Proposal Sent to Asuna]
+    const knownMatch = Object.keys(session.knownCharacters).find((k) =>
+      lowerMsg.includes(k.toLowerCase())
+    )
+    const partner =
+      knownMatch ??
+      session.romanceTarget?.name ??
+      session.preGameBonds?.[0]?.characterName ??
+      'Asuna'
+    const prevPartnerAff = session.knownCharacters[partner]?.affection ?? currentAffection
+    const newAff = Math.max(950, prevPartnerAff + 50)
+    return `[SYSTEM ALERT: Marriage Proposal Sent to ${partner}]
 
-ท่ามกลางแสงอาทิตย์ยามเย็นที่สาดส่องลงมายังระเบียงหินอ่อนของชั้นที่ 22 คุณคุกเข่าลงและส่งหน้าต่างคำขอแต่งงานสีทองอร่ามไปตรงหน้า **Asuna** 
+ท่ามกลางแสงอาทิตย์ยามเย็นที่สาดส่องลงมายังระเบียงหินอ่อน คุณคุกเข่าลงและส่งหน้าต่างคำขอแต่งงานสีทองอร่ามไปตรงหน้า **${partner}**
 
-ดวงตาสีน้ำตาลอ่อนของเธอเบิกกว้างขึ้นเล็กน้อย พวงแก้มขึ้นสีแดงระเรื่ออย่างเห็นได้ชัด เธอสูดหายใจลึก แล้วยื่นปลายนิ้วเรียวกดปุ่ม **[ACCEPT]** บนหน้าต่างโปร่งแสงด้วยรอยยิ้มที่เปี่ยมไปด้วยความสุข
+ดวงตาของเธอเบิกกว้างขึ้นเล็กน้อย พวงแก้มขึ้นสีแดงระเรื่ออย่างเห็นได้ชัด เธอสูดหายใจลึก แล้วยื่นปลายนิ้วเรียวกดปุ่ม **[ACCEPT]** บนหน้าต่างโปร่งแสงด้วยรอยยิ้มที่เปี่ยมไปด้วยความสุข
 
 "ต่อจากนี้ไป... ไม่ว่าโลกนี้จะโหดร้ายแค่ไหน เราจะอยู่เคียงข้างกันตลอดไปนะ **${name}**"
 
 แสงสีทองโอบล้อมร่างของทั้งคู่ เสียงระบบประกาศก้องขึ้นพร้อมปลดล็อกสิทธิ์ **Shared Inventory** และ **กระท่อมไม้ริมทะเลสาบชั้น 22**!
 
-1. พา Asuna เดินชมบ้านหลังใหม่ที่ชั้น 22 และจัดของเข้า Shared Inventory
-2. ชวน Asuna ทำอาหารเย็นฉลองการแต่งงานด้วยกัน
+1. พา ${partner} เดินชมบ้านหลังใหม่ที่ชั้น 22 และจัดของเข้า Shared Inventory
+2. ชวน ${partner} ทำอาหารเย็นฉลองการแต่งงานด้วยกัน
 3. จับมือคู่สมรสออกเดินทางไปเคลียร์ดันเจี้ยนพร้อมบัฟคู่รัก
 
 \`\`\`json_state
@@ -446,12 +563,12 @@ async function generateDemoCardinalResponse(
     "max_hp": ${p.max_hp + 50},
     "col": ${p.col + 1000},
     "status_effects": ["Marriage Blessing (+15% All Stats)"],
-    "inventory_changes": ["+1 Marriage Ring (Asuna)"],
-    "spouse": "Asuna"
+    "inventory_changes": ["+1 Marriage Ring (${partner})"],
+    "spouse": "${partner}"
   },
   "characters_in_scene": [
     {
-      "name": "Asuna",
+      "name": "${partner}",
       "affection": ${newAff},
       "affection_delta": "+50",
       "relationship_tier": "Married",
@@ -461,12 +578,12 @@ async function generateDemoCardinalResponse(
     }
   ],
   "system_alerts": [
-    "Marriage Accepted! คุณและ Asuna เป็นคู่สมรสกันแล้ว",
+    "Marriage Accepted! คุณและ ${partner} เป็นคู่สมรสกันแล้ว",
     "ปลดล็อก Shared Inventory & Floor 22 Cabin!"
   ],
   "marriage_event_triggered": true,
-  "marriage_partner": "Asuna",
-  "scene_image_prompt": "Asuna in Aincrad Floor 22 lakeside cabin sunset, smiling tearfully and holding out her hand with a glowing golden marriage ring"
+  "marriage_partner": "${partner}",
+  "scene_image_prompt": "${partner} in Aincrad Floor 22 lakeside cabin sunset, smiling tearfully and holding out her hand with a glowing golden marriage ring"
 }
 \`\`\``
   }
@@ -548,13 +665,83 @@ async function generateDemoCardinalResponse(
 \`\`\``
   }
 
+  // Handle Romance Mode Interactions in Demo Mode
+  const romanceTarget = session.romanceTarget ?? session.profile.romanceTarget
+  if (session.profile.storyMode === 'romance' && romanceTarget) {
+    const prevChar = session.knownCharacters[romanceTarget.name]
+    const prevAff = prevChar?.affection ?? 150
+    const isConfess = /คบ|เป็นแฟน|รักนะ|สารภาพ|confess|date me/.test(lowerMsg)
+    const gain = isConfess ? Math.max(220, 560 - prevAff) : 185
+    const nextAff = Math.min(1000, prevAff + gain)
+    const unlockedNow = prevAff < 500 && nextAff >= 500
+    const nextTier =
+      nextAff >= 900
+        ? 'Ready for Marriage'
+        : nextAff >= 700
+          ? 'Lover'
+          : nextAff >= 500
+            ? 'Romantic Interest'
+            : 'Close Friend'
+
+    return `ท่ามกลางบรรยากาศอันอบอุ่นของ **${session.worldState.location}** คำพูดและความใส่ใจของคุณทำให้ **${romanceTarget.name}** ชะงักไปครู่หนึ่งก่อนที่พวงแก้มจะขึ้นสีแดงระเรื่ออย่างเห็นได้ชัด
+
+*"อะ... เอ๊ะ พูดอะไรแบบนั้นน่ะ **${name}**! ก็... มันก็ตรงกับเรื่องที่ฉันชอบอย่าง **${romanceTarget.loves[0]}** อยู่นิดหน่อยหรอกนะ... ขอบคุณที่จำได้นะ!"*
+
+${
+  isConfess || unlockedNow
+    ? `เธอก้มหน้ายิ้มเขินก่อนจะพยักหน้าเบาๆ **สถานะความสัมพันธ์ขยับเป็น ${nextTier}!**\n\n**[UNLOCKED]** คุณปลดล็อกสิทธิ์พิเศษ **${romanceTarget.perk.title}** เรียบร้อยแล้ว สามารถกดปุ่ม **เข้าเกม** หรือกลับไปเริ่มเซฟใหม่พร้อมพกความสัมพันธ์นี้ไปใช้ในโลกเกมได้เลย!`
+    : `แววตาของ ${romanceTarget.name} ดูเปิดใจและอ่อนโยนกับคุณมากขึ้นกว่าเดิมอย่างชัดเจน`
+}
+
+1. ชวน ${romanceTarget.name} ไปเดตต่อและทำสิ่งที่เธอชอบ (${romanceTarget.likes[0]})
+2. ${nextAff >= 500 ? `กดปุ่ม "เข้าเกม (${session.profile.startingArc})" เพื่อพาเธอเข้าไปเล่นเกมด้วยกัน!` : 'เอ่ยปากชวนคบหา / สารภาพความในใจเพื่อปลดล็อกสิทธิ์พิเศษ (Affection 500+)'}
+3. พูดคุยถึงแผนการผจญภัยใน ${session.profile.startingArc}
+
+\`\`\`json_state
+{
+  "world_arc": "Real World (Pre-Dive Dating)",
+  "location": "${session.worldState.location}",
+  "in_game_date": "${session.worldState.in_game_date}",
+  "canon_divergence": "${session.worldState.canon_divergence}",
+  "player": {
+    "level": ${p.level},
+    "hp": ${p.hp},
+    "max_hp": ${p.max_hp},
+    "col": ${p.col},
+    "status_effects": ["Pre-Game Dating Mode"],
+    "inventory_changes": [],
+    "spouse": null
+  },
+  "characters_in_scene": [
+    {
+      "name": "${romanceTarget.name}",
+      "affection": ${nextAff},
+      "affection_delta": "+${gain}",
+      "relationship_tier": "${nextTier}",
+      "mood": "${nextAff >= 500 ? 'In Love & Flustered' : 'Happy & Warming Up'}",
+      "is_married": false,
+      "can_propose": ${nextAff >= 900}
+    }
+  ],
+  "system_alerts": [
+    "Affection with ${romanceTarget.name} +${gain} (${nextTier})${unlockedNow ? ` — ปลดล็อกสิทธิ์พิเศษ: ${romanceTarget.perk.title}!` : ''}"
+  ],
+  "marriage_event_triggered": false,
+  "scene_image_prompt": null
+}
+\`\`\``
+  }
+
   // Trigger a Dice Challenge in Demo Mode for combat, monster hunting, escape, or tactical thinking
   if (
     /มอนสเตอร์|ตี|ล่า|ดันเจี้ยน|ทดสอบสกิล|โจมตี|ต่อสู้|สู้|บอส|หนี|ถอย|วิเคราะห์|คิด|กับดัก|ทอยเต๋า|monster|hunt|attack|fight|escape|flee|think|analyze/.test(
       lowerMsg
     )
   ) {
-    const challenge = buildDiceChallengeFromAction(userMessage, session.worldState)
+    const challenge = buildDiceChallengeFromAction(userMessage, {
+      ...session.worldState,
+      location: 'Floor 1 - Western Plains',
+    })
     return `คุณก้าวออกจากเขตปลอดภัยบริเวณ **${session.worldState.location}** ทันใดนั้นเสียงพุ่มไม้สั่นไหวอย่างรุนแรง! **Frenzy Boar & Kobold Scout** พุ่งออกมาขวางทางเบื้องหน้า!
 
 ระบบ Cardinal เปิดหน้าต่าง **เลือกแนวทางรับมือ & ทอยลูกเต๋า (1d20)** ให้คุณเลือกว่าจะ **เข้าสู้**, **ใช้ความคิดวิเคราะห์**, หรือ **หลบหนี** โดยคำนวณโอกาสสำเร็จ (%) จากค่า Stat และอุปกรณ์สวมใส่ของคุณให้เห็นแบบเรียลไทม์!

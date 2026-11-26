@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { MessageSquare, Users } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Activity, Backpack, MessageSquare, Users } from 'lucide-react'
 import { ArcTransferModal } from './components/ArcTransferModal'
 import { ChatPanel } from './components/ChatPanel'
 import { DiceRollModal } from './components/DiceRollModal'
@@ -7,30 +7,42 @@ import type { DiceRollResolution } from './components/DiceRollModal'
 import { InventoryPanel } from './components/InventoryPanel'
 import { LinkStartScreen } from './components/LinkStartScreen'
 import { MarriageModal } from './components/MarriageModal'
+import type { OstControlsState } from './components/OstControlPill'
+import { OstPlayerEngine } from './components/OstPlayerEngine'
 import { RelationshipPanel } from './components/RelationshipPanel'
 import { SettingsModal } from './components/SettingsModal'
 import { ShopModal } from './components/ShopModal'
 import { StatPanel } from './components/StatPanel'
 import { SystemAlertOverlay } from './components/SystemAlertOverlay'
 import { TopStatusHud } from './components/TopStatusHud'
+import { clonePerkShopWithDiscount } from './data/romanceRoster'
+import { detectOstSituation, getTracksForSituation } from './data/saoOstCatalog'
+import type { OstSituation, OstTrack } from './data/saoOstCatalog'
 import { sendCardinalTurn } from './services/geminiService'
 import { evaluateEventCGTrigger, generateEventCGImage } from './services/imageService'
 import { saveItemToCache } from './services/itemService'
 import type {
   AppSettings,
   ChatMessage,
+  CompanionPerkDefinition,
   DiceChallenge,
   EventCG,
   GameSession,
   GeminiModel,
   PlayerProfile,
   SaveSlotMeta,
+  SavedRomanceBond,
   ShopItem,
   StatKey,
   SystemAlertItem,
   WikiLoreEntry,
   WorldState,
 } from './types/game'
+import {
+  deleteSavedRomanceBond,
+  loadSavedRomanceBonds,
+  syncSessionBondsToStorage,
+} from './utils/romanceStorage'
 import {
   computeDerivedStats,
   createInitialStatState,
@@ -74,6 +86,7 @@ export function App() {
   const [session, setSession] = useState<GameSession | null>(null)
   const [hasAutoSave, setHasAutoSave] = useState<boolean>(() => Boolean(loadAutoSave()))
   const [saveSlots, setSaveSlots] = useState<SaveSlotMeta[]>(() => loadSaveSlots())
+  const [savedBonds, setSavedBonds] = useState<SavedRomanceBond[]>(() => loadSavedRomanceBonds())
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isTransferOpen, setIsTransferOpen] = useState(false)
   const [isShopOpen, setIsShopOpen] = useState(false)
@@ -88,6 +101,11 @@ export function App() {
   const [marriageModalCG, setMarriageModalCG] = useState<EventCG | null>(null)
   const [generatingImageMsgId, setGeneratingImageMsgId] = useState<string | null>(null)
   const [mobileTab, setMobileTab] = useState<'chat' | 'hud'>('chat')
+  const [rightTab, setRightTab] = useState<'relationships' | 'inventory' | 'stats'>('relationships')
+  const [manualOstSituation, setManualOstSituation] = useState<OstSituation | null>(null)
+  const [ostTrackIndex, setOstTrackIndex] = useState(0)
+  const [manualTrackOverride, setManualTrackOverride] = useState<OstTrack | null>(null)
+  const [isOstPlaying, setIsOstPlaying] = useState(false)
   const abortControllerRef = useRef<AbortController | null>(null)
   const lastFailedTurnRef = useRef<{ userText: string; isOpening: boolean } | null>(null)
 
@@ -118,6 +136,8 @@ export function App() {
     if (session) {
       saveAutoSave(session)
       setHasAutoSave(true)
+      const nextBonds = syncSessionBondsToStorage(session)
+      setSavedBonds(nextBonds)
     }
   }, [session])
 
@@ -707,8 +727,117 @@ export function App() {
     void executeTurn(session, resolution.promptText, false)
   }
 
+  const handleActivatePerk = (characterName: string, perk: CompanionPerkDefinition) => {
+    if (!session) return
+    if (perk.actionType === 'shop' && perk.shopTemplate) {
+      const discountedShop = clonePerkShopWithDiscount(perk.shopTemplate, 0.2)
+      setSession({
+        ...session,
+        worldState: {
+          ...session.worldState,
+          shop: discountedShop,
+        },
+        updatedAt: Date.now(),
+      })
+      setIsShopOpen(true)
+      pushAlert(
+        'PARTNER PERK',
+        `เปิดใช้สิทธิ์พิเศษ: ${perk.title} (-20% Col จาก ${characterName})`,
+        'affection'
+      )
+      return
+    }
+    if (perk.quickPrompt) {
+      setMobileTab('chat')
+      void executeTurn(session, perk.quickPrompt, false)
+    }
+  }
+
+  const handleDeleteBond = (characterName: string) => {
+    const next = deleteSavedRomanceBond(characterName)
+    setSavedBonds(next)
+    pushAlert('BOND REMOVED', `ลบความสัมพันธ์ที่บันทึกไว้ของ ${characterName} แล้ว`, 'info')
+  }
+
+  const detectedOstSituation = useMemo(
+    () =>
+      detectOstSituation({
+        session,
+        isShopOpen,
+        isDiceModalOpen,
+        marriageModalPartner,
+      }),
+    [session, isShopOpen, isDiceModalOpen, marriageModalPartner]
+  )
+
+  const activeOstSituation = manualOstSituation ?? detectedOstSituation
+
+  // Reset manual track override & rotation index whenever the detected/active situation changes
+  useEffect(() => {
+    setManualTrackOverride(null)
+    setOstTrackIndex(0)
+  }, [activeOstSituation])
+
+  const situationTracks = useMemo(
+    () => getTracksForSituation(activeOstSituation),
+    [activeOstSituation]
+  )
+
+  const currentOstTrack =
+    manualTrackOverride ?? situationTracks[ostTrackIndex % situationTracks.length]
+
+  const handleToggleOstEnabled = useCallback(() => {
+    setSettings((prev) => {
+      const next = { ...prev, ostEnabled: !prev.ostEnabled }
+      saveSettings(next)
+      return next
+    })
+  }, [])
+
+  const handleChangeOstVolume = useCallback((vol: number) => {
+    const clamped = Math.max(0, Math.min(100, Math.round(vol)))
+    setSettings((prev) => {
+      const next = { ...prev, ostVolume: clamped }
+      saveSettings(next)
+      return next
+    })
+  }, [])
+
+  const handleNextOstTrack = useCallback(() => {
+    setManualTrackOverride(null)
+    setOstTrackIndex((prev) => (prev + 1) % situationTracks.length)
+  }, [situationTracks.length])
+
+  const ostControls: OstControlsState = {
+    enabled: settings.ostEnabled,
+    volume: settings.ostVolume,
+    isPlaying: isOstPlaying,
+    activeSituation: activeOstSituation,
+    manualSituation: manualOstSituation,
+    currentTrack: currentOstTrack,
+    onToggleEnabled: handleToggleOstEnabled,
+    onChangeVolume: handleChangeOstVolume,
+    onNextTrack: handleNextOstTrack,
+    onSelectSituation: (sit) => {
+      setManualOstSituation(sit)
+      setManualTrackOverride(null)
+      setOstTrackIndex(0)
+    },
+    onSelectTrack: (track) => {
+      setManualTrackOverride(track)
+    },
+  }
+
   return (
     <div className="min-h-screen text-slate-100">
+      <OstPlayerEngine
+        enabled={settings.ostEnabled}
+        volume={settings.ostVolume}
+        track={currentOstTrack}
+        onPlayingChange={setIsOstPlaying}
+        onErrorSkip={handleNextOstTrack}
+      />
+
       <SystemAlertOverlay
         alerts={alerts}
         onDismiss={(id) => setAlerts((prev) => prev.filter((a) => a.id !== id))}
@@ -719,18 +848,22 @@ export function App() {
           settings={settings}
           hasAutoSave={hasAutoSave}
           hasAnySaves={hasAutoSave || saveSlots.length > 0}
+          savedBonds={savedBonds}
+          ostControls={ostControls}
+          onDeleteBond={handleDeleteBond}
           onStartNewGame={handleStartNewGame}
           onResumeAutoSave={handleResumeAutoSave}
           onOpenTransfer={() => setIsTransferOpen(true)}
           onOpenSettings={() => setIsSettingsOpen(true)}
         />
       ) : (
-        <div className="flex min-h-screen flex-col">
+        <div className="flex min-h-screen flex-col lg:h-screen lg:overflow-hidden">
           <TopStatusHud
             session={session}
             model={settings.model}
             fastMode={settings.fastMode}
             demoMode={settings.demoMode}
+            ostControls={ostControls}
             onToggleModel={handleToggleModel}
             onToggleFastMode={handleToggleFastMode}
             onOpenSettings={() => setIsSettingsOpen(true)}
@@ -741,40 +874,40 @@ export function App() {
           />
 
           {/* Mobile Tab Bar */}
-          <div className="mx-auto mt-3 flex w-full max-w-[1440px] gap-2 px-3 lg:hidden">
+          <div className="flex w-full border-b border-white/[0.08] bg-[#0d131c] lg:hidden">
             <button
               type="button"
               onClick={() => setMobileTab('chat')}
-              className={`flex flex-1 items-center justify-center gap-1.5 rounded border py-2 text-xs font-semibold transition ${
+              className={`flex flex-1 items-center justify-center gap-1.5 border-b-2 py-2.5 text-xs font-semibold transition ${
                 mobileTab === 'chat'
-                  ? 'border-[#e3a024]/70 bg-[#e3a024]/15 text-amber-100'
-                  : 'border-slate-300/15 bg-white/[0.03] text-slate-300'
+                  ? 'border-[#e3a024] text-[#f0c05e]'
+                  : 'border-transparent text-slate-400'
               }`}
             >
-              <MessageSquare className="h-4 w-4" />
-              เนื้อเรื่อง (Roleplay)
+              <MessageSquare className="h-3.5 w-3.5" />
+              เนื้อเรื่อง
             </button>
             <button
               type="button"
               onClick={() => setMobileTab('hud')}
-              className={`flex flex-1 items-center justify-center gap-1.5 rounded border py-2 text-xs font-semibold transition ${
+              className={`flex flex-1 items-center justify-center gap-1.5 border-b-2 py-2.5 text-xs font-semibold transition ${
                 mobileTab === 'hud'
-                  ? 'border-[#e3a024]/70 bg-[#e3a024]/15 text-amber-100'
-                  : 'border-slate-300/15 bg-white/[0.03] text-slate-300'
+                  ? 'border-[#e3a024] text-[#f0c05e]'
+                  : 'border-transparent text-slate-400'
               }`}
             >
-              <Users className="h-4 w-4" />
-              ความสัมพันธ์ &amp; กระเป๋า ({Object.keys(session.knownCharacters).length})
+              <Users className="h-3.5 w-3.5" />
+              เมนูเกม ({Object.keys(session.knownCharacters).length})
             </button>
           </div>
 
-          {/* Main Workspace Grid */}
-          <main className="mx-auto grid w-full max-w-[1440px] flex-1 gap-4 p-3 sm:p-5 lg:grid-cols-12">
-            {/* Left/Center: Roleplay Chat Panel */}
+          {/* Single-Viewport Game Workspace */}
+          <main className="grid min-h-0 flex-1 lg:grid-cols-12">
+            {/* Left/Center: Light Novel Story Stage */}
             <section
-              className={`lg:col-span-7 xl:col-span-8 ${
-                mobileTab === 'chat' ? 'block' : 'hidden lg:block'
-              } h-[calc(100vh-145px)] min-h-[520px]`}
+              className={`min-h-0 lg:col-span-8 xl:col-span-8 lg:border-r lg:border-white/[0.08] ${
+                mobileTab === 'chat' ? 'flex flex-col' : 'hidden lg:flex lg:flex-col'
+              }`}
             >
               <ChatPanel
                 messages={session.messages}
@@ -798,42 +931,115 @@ export function App() {
               />
             </section>
 
-            {/* Right: Relationship + Inventory & Party */}
+            {/* Right: Unified Tabbed SAO Game Drawer */}
             <aside
-              className={`space-y-4 lg:col-span-5 xl:col-span-4 ${
-                mobileTab === 'hud' ? 'block' : 'hidden lg:block'
+              className={`min-h-0 bg-[#0d131c] lg:col-span-4 xl:col-span-4 ${
+                mobileTab === 'hud' ? 'flex flex-col' : 'hidden lg:flex lg:flex-col'
               }`}
             >
-              <RelationshipPanel
-                knownCharacters={session.knownCharacters}
-                inSceneNames={session.worldState.characters_in_scene.map((c) => c.name)}
-                partyMembers={session.partyMembers}
-                inventory={session.inventory}
-                isLoading={isLoading}
-                onQuickAction={(prompt) => {
-                  setMobileTab('chat')
-                  void executeTurn(session, prompt, false)
-                }}
-              />
+              {/* Drawer Navigation Tabs */}
+              <div className="grid grid-cols-3 border-b border-white/[0.08] bg-[#0a0f16]">
+                <button
+                  type="button"
+                  onClick={() => setRightTab('relationships')}
+                  className={`flex items-center justify-center gap-1.5 border-b-2 py-3 text-xs font-medium transition ${
+                    rightTab === 'relationships'
+                      ? 'border-[#e3a024] bg-white/[0.03] text-white'
+                      : 'border-transparent text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <Users className="h-3.5 w-3.5 text-rose-400" />
+                  <span>ตัวละคร</span>
+                  <span className="text-[10px] text-slate-500">
+                    ({Object.keys(session.knownCharacters).length})
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRightTab('inventory')}
+                  className={`flex items-center justify-center gap-1.5 border-b-2 py-3 text-xs font-medium transition ${
+                    rightTab === 'inventory'
+                      ? 'border-[#e3a024] bg-white/[0.03] text-white'
+                      : 'border-transparent text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <Backpack className="h-3.5 w-3.5 text-slate-300" />
+                  <span>กระเป๋า &amp; โลก</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRightTab('stats')}
+                  className={`flex items-center justify-center gap-1.5 border-b-2 py-3 text-xs font-medium transition ${
+                    rightTab === 'stats'
+                      ? 'border-[#e3a024] bg-white/[0.03] text-white'
+                      : 'border-transparent text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <Activity className="h-3.5 w-3.5 text-[#e3a024]" />
+                  <span>ค่าสถานะ</span>
+                  {ensureCharacterStats(
+                    session.characterStats,
+                    session.worldState.player.level,
+                    session.profile.weapon
+                  ).statPoints > 0 && (
+                    <span className="rounded bg-[#e3a024] px-1 text-[9px] font-bold text-slate-950">
+                      +
+                      {
+                        ensureCharacterStats(
+                          session.characterStats,
+                          session.worldState.player.level,
+                          session.profile.weapon
+                        ).statPoints
+                      }
+                    </span>
+                  )}
+                </button>
+              </div>
 
-              <InventoryPanel
-                session={session}
-                settings={settings}
-                isLoading={isLoading}
-                onQuickAction={(prompt) => {
-                  setMobileTab('chat')
-                  void executeTurn(session, prompt, false)
-                }}
-                onToggleEquip={handleToggleEquip}
-              />
+              {/* Active Drawer Content */}
+              <div className="flex-1 overflow-y-auto p-4">
+                {rightTab === 'relationships' && (
+                  <RelationshipPanel
+                    knownCharacters={session.knownCharacters}
+                    inSceneNames={session.worldState.characters_in_scene.map((c) => c.name)}
+                    partyMembers={session.partyMembers}
+                    inventory={session.inventory}
+                    storyMode={session.profile.storyMode}
+                    romanceTarget={session.romanceTarget ?? session.profile.romanceTarget}
+                    targetArc={session.profile.startingArc}
+                    isLoading={isLoading}
+                    onQuickAction={(prompt) => {
+                      setMobileTab('chat')
+                      void executeTurn(session, prompt, false)
+                    }}
+                    onActivatePerk={handleActivatePerk}
+                    onOpenTransfer={() => setIsTransferOpen(true)}
+                  />
+                )}
 
-              <StatPanel
-                stats={session.characterStats}
-                level={session.worldState.player.level}
-                weapon={session.profile.weapon}
-                onAllocateStat={handleAllocateStat}
-                onResetStats={handleResetStats}
-              />
+                {rightTab === 'inventory' && (
+                  <InventoryPanel
+                    session={session}
+                    settings={settings}
+                    isLoading={isLoading}
+                    onQuickAction={(prompt) => {
+                      setMobileTab('chat')
+                      void executeTurn(session, prompt, false)
+                    }}
+                    onToggleEquip={handleToggleEquip}
+                  />
+                )}
+
+                {rightTab === 'stats' && (
+                  <StatPanel
+                    stats={session.characterStats}
+                    level={session.worldState.player.level}
+                    weapon={session.profile.weapon}
+                    onAllocateStat={handleAllocateStat}
+                    onResetStats={handleResetStats}
+                  />
+                )}
+              </div>
             </aside>
           </main>
         </div>

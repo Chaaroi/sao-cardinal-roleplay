@@ -6,7 +6,51 @@ export type WorldArc =
   | 'Underworld'
   | 'Gameverse Crossover'
 
-export type StoryMode = 'canon' | 'sandbox'
+export type StoryMode = 'canon' | 'sandbox' | 'romance'
+
+export interface CompanionPerkDefinition {
+  id: string
+  title: string
+  shortLabel: string
+  description: string
+  unlockAffection: number
+  actionType: 'shop' | 'quick_action'
+  shopTemplate?: ShopState
+  quickPrompt?: string
+}
+
+export interface RomanceCharacterProfile {
+  id: string
+  name: string
+  wikiTitle: string
+  roleTitle: string
+  realWorldSetting: string
+  personality: string
+  loves: string[]
+  likes: string[]
+  dislikes: string[]
+  wikiExcerpt?: string
+  thumbnailUrl?: string
+  perk: CompanionPerkDefinition
+}
+
+export interface SavedRomanceBond {
+  characterName: string
+  wikiTitle?: string
+  affection: number
+  relationship_tier: string
+  is_married: boolean
+  mood: string
+  perkUnlocked: boolean
+  perkTitle: string
+  perkDescription: string
+  loves: string[]
+  likes: string[]
+  dislikes: string[]
+  personality?: string
+  sourceArc: string
+  updatedAt: number
+}
 
 export type WeaponType =
   | 'One-Handed Sword'
@@ -88,6 +132,8 @@ export interface PlayerProfile {
   startingArc: WorldArc
   storyMode: StoryMode
   avatarTitle?: string
+  romanceTarget?: RomanceCharacterProfile | null
+  preGameBonds?: SavedRomanceBond[]
 }
 
 export interface CharacterState {
@@ -222,6 +268,8 @@ export interface GameSession {
   profile: PlayerProfile
   originRoute?: 'Aincrad (Floor 1)' | 'Progressive' | null
   arcHistory?: WorldArc[]
+  romanceTarget?: RomanceCharacterProfile | null
+  preGameBonds?: SavedRomanceBond[]
   characterStats?: CharacterStatState
   equippedItems?: string[]
   worldState: WorldState
@@ -242,6 +290,8 @@ export interface AppSettings {
   fastMode: boolean
   autoEventImages: boolean
   imageModel: string
+  ostEnabled: boolean
+  ostVolume: number
 }
 
 export interface SaveSlotMeta {

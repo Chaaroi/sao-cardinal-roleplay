@@ -28,17 +28,15 @@ export function StatPanel({
   const hasPoints = activeStats.statPoints > 0
 
   return (
-    <div className="sao-panel rounded-md p-4">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/12 pb-2.5">
-        <div className="flex items-center gap-2">
-          <Activity className="h-4 w-4 text-[#e3a024]" />
-          <div>
-            <h3 className="font-hud text-xs font-bold tracking-[0.14em] text-slate-200 uppercase">
-              Character Stats
-            </h3>
-            <div className="text-[10px] text-slate-400">{archetype}</div>
+    <div className="space-y-4">
+      {/* Header Summary Strip */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] pb-3">
+        <div>
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-100">
+            <Activity className="h-3.5 w-3.5 text-[#e3a024]" />
+            <span>{archetype}</span>
           </div>
+          <div className="mt-0.5 text-[11px] text-slate-500">Lv.{level} · {weapon}</div>
         </div>
 
         <div className="flex items-center gap-2">
@@ -46,11 +44,11 @@ export function StatPanel({
             className={`font-hud flex items-center gap-1 rounded border px-2.5 py-1 text-[11px] font-bold transition ${
               hasPoints
                 ? 'border-[#e3a024]/60 bg-[#e3a024]/15 text-amber-200'
-                : 'border-slate-300/15 bg-white/[0.03] text-slate-400'
+                : 'border-slate-300/12 bg-white/[0.02] text-slate-400'
             }`}
           >
             {hasPoints && <Sparkles className="h-3 w-3 text-[#e3a024]" />}
-            <span>แต้มคงเหลือ: {activeStats.statPoints}</span>
+            <span>แต้มอัปเกรด: {activeStats.statPoints}</span>
           </div>
 
           {activeStats.spentPoints > 0 && (
@@ -58,7 +56,7 @@ export function StatPanel({
               type="button"
               onClick={onResetStats}
               title="รีเซ็ตแต้ม Stat ทั้งหมดคืน"
-              className="flex items-center gap-1 rounded border border-slate-300/15 bg-white/[0.04] px-2 py-1 text-[10px] text-slate-300 hover:border-rose-400/40 hover:bg-rose-500/15 hover:text-rose-200"
+              className="flex items-center gap-1 rounded border border-slate-300/15 bg-white/[0.03] px-2 py-1 text-[10px] text-slate-300 hover:border-rose-400/40 hover:bg-rose-500/15 hover:text-rose-200"
             >
               <RotateCcw className="h-3 w-3" />
               รีเซ็ต
@@ -68,7 +66,7 @@ export function StatPanel({
       </div>
 
       {/* 6 Primary Attributes */}
-      <div className="mt-3 grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {STAT_META.map((meta) => {
           const val = activeStats.attributes[meta.key]
           return (
