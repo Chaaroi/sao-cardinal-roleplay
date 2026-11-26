@@ -2,66 +2,67 @@
 
 @layer base {
   body {
-    font-family: 'Noto Sans Thai', 'Rajdhani', sans-serif;
-    background-color: #060d18;
+    font-family: 'IBM Plex Sans Thai', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #0d131c;
     background-image:
-      radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.14) 0%, transparent 45%),
-      radial-gradient(circle at 85% 20%, rgba(224, 242, 254, 0.08) 0%, transparent 40%),
-      radial-gradient(circle at 50% 90%, rgba(14, 165, 233, 0.12) 0%, transparent 50%),
-      linear-gradient(rgba(148, 163, 184, 0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(148, 163, 184, 0.04) 1px, transparent 1px);
-    background-size: 100% 100%, 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(186, 210, 235, 0.12) 0%, transparent 70%),
+      radial-gradient(circle at 85% 85%, rgba(227, 160, 36, 0.05) 0%, transparent 45%),
+      linear-gradient(180deg, #0d131c 0%, #111926 100%);
     min-height: 100vh;
     overflow-x: hidden;
   }
 }
 
 .font-hud {
-  font-family: 'Orbitron', 'Rajdhani', 'Noto Sans Thai', sans-serif;
+  font-family: 'Rajdhani', 'IBM Plex Sans Thai', sans-serif;
+  letter-spacing: 0.04em;
 }
 
 .font-raj {
-  font-family: 'Rajdhani', 'Noto Sans Thai', sans-serif;
+  font-family: 'Rajdhani', 'IBM Plex Sans Thai', sans-serif;
 }
 
-/* SAO Aincrad Translucent Glass Panel */
+/* Authentic SAO Smoke-Glass Window (clean hairline border, subtle frosted depth, no neon slop) */
 .sao-panel {
-  background: linear-gradient(145deg, rgba(240, 249, 255, 0.12), rgba(15, 23, 42, 0.68));
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(186, 230, 253, 0.35);
+  background: linear-gradient(180deg, rgba(24, 32, 46, 0.88) 0%, rgba(16, 22, 33, 0.92) 100%);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(226, 232, 240, 0.14);
   box-shadow:
-    0 8px 32px rgba(2, 6, 23, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    0 0 18px rgba(56, 189, 248, 0.1);
+    0 12px 32px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .sao-panel-light {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.16), rgba(30, 41, 59, 0.55));
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(224, 242, 254, 0.38);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(226, 232, 240, 0.12);
+}
+
+/* Classic SAO Tapered HP Gauge */
+.sao-hp-bar {
+  clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+}
+
+/* SAO List Menu Item with subtle chamfered hover accent */
+.sao-menu-row {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(226, 232, 240, 0.1);
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.sao-menu-row:hover {
+  background: rgba(227, 160, 36, 0.1);
+  border-color: rgba(227, 160, 36, 0.45);
 }
 
 .sao-hex {
   clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
 }
 
-.sao-hp-skew {
-  transform: skewX(-16deg);
-}
-
 @keyframes alertPop {
   0% {
     opacity: 0;
-    transform: translateY(-16px) scale(0.95);
-  }
-  15% {
-    opacity: 1;
-    transform: translateY(0) scale(1.02);
-  }
-  25% {
-    transform: translateY(0) scale(1);
+    transform: translateY(-10px) scale(0.98);
   }
   100% {
     opacity: 1;
@@ -70,7 +71,7 @@
 }
 
 .animate-alert-pop {
-  animation: alertPop 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: alertPop 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes spinSlow {
@@ -83,62 +84,64 @@
 }
 
 .animate-spin-slow {
-  animation: spinSlow 18s linear infinite;
+  animation: spinSlow 24s linear infinite;
 }
 
 .animate-spin-reverse {
-  animation: spinSlow 12s linear infinite reverse;
+  animation: spinSlow 16s linear infinite reverse;
 }
 
-/* Custom SAO Scrollbar */
+/* Refined Subtle Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.35);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(125, 211, 252, 0.4);
+  background: rgba(148, 163, 184, 0.25);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(56, 189, 248, 0.75);
+  background: rgba(226, 232, 240, 0.45);
 }
 
-/* SAO Light Novel Markdown Formatting */
+/* Editorial Light-Novel Typography for Narrative */
 .sao-markdown p {
-  margin-top: 0.45rem;
-  margin-bottom: 0.45rem;
-  line-height: 1.72;
+  margin-top: 0.65rem;
+  margin-bottom: 0.65rem;
+  line-height: 1.85;
+  color: #e2e8f0;
 }
 .sao-markdown p:first-child {
   margin-top: 0;
 }
 .sao-markdown strong {
-  color: #a5f3fc;
+  color: #f8fafc;
   font-weight: 600;
 }
 .sao-markdown em {
-  color: #bae6fd;
+  color: #cbd5e1;
   font-style: italic;
 }
 .sao-markdown h1,
 .sao-markdown h2,
 .sao-markdown h3 {
-  color: #e0f2fe;
-  font-weight: 700;
-  margin-top: 0.75rem;
-  margin-bottom: 0.35rem;
+  color: #f1f5f9;
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.4rem;
 }
 .sao-markdown ol,
 .sao-markdown ul {
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
+  margin-top: 0.6rem;
+  margin-bottom: 0.6rem;
   padding-left: 1.35rem;
+  color: #cbd5e1;
 }
 .sao-markdown ol {
   list-style-type: decimal;
@@ -147,20 +150,20 @@
   list-style-type: disc;
 }
 .sao-markdown li {
-  margin-top: 0.2rem;
-  margin-bottom: 0.2rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
 }
 .sao-markdown code {
-  background: rgba(15, 23, 42, 0.75);
-  border: 1px solid rgba(103, 232, 249, 0.25);
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(226, 232, 240, 0.16);
   border-radius: 0.25rem;
   padding: 0.1rem 0.35rem;
   font-size: 0.85em;
-  color: #fde68a;
+  color: #f59e0b;
 }
 .sao-markdown blockquote {
-  border-left: 3px solid rgba(56, 189, 248, 0.65);
-  padding-left: 0.85rem;
-  margin: 0.5rem 0;
+  border-left: 2px solid #e3a024;
+  padding-left: 0.9rem;
+  margin: 0.75rem 0;
   color: #cbd5e1;
 }

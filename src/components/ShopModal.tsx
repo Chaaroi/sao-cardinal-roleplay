@@ -36,38 +36,38 @@ export function ShopModal({ shop, playerCol, onBuyItem, onClose }: ShopModalProp
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md">
-      <div className="sao-panel max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-2xl flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#06090e]/82 p-4 backdrop-blur-sm">
+      <div className="sao-panel flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-lg">
         {/* Shop Header */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-cyan-200/25 bg-slate-950/60 px-6 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-300/15 bg-[#0b1018] px-6 py-4">
           <div className="flex items-center gap-3">
             {shop.shopkeeper ? (
               <CharacterAvatar
                 name={shop.shopkeeper}
                 size="md"
-                ringClassName="border-amber-300/80 shadow-[0_0_12px_rgba(251,191,36,0.45)]"
+                ringClassName="border-[#e3a024]/70"
               />
             ) : (
-              <div className="flex h-11 w-11 items-center justify-center rounded-full border border-cyan-300/60 bg-cyan-500/20 text-cyan-200">
+              <div className="flex h-11 w-11 items-center justify-center rounded border border-[#e3a024]/50 bg-[#e3a024]/15 text-[#f0c05e]">
                 <ShoppingBag className="h-5 w-5" />
               </div>
             )}
             <div>
-              <div className="font-hud text-[10px] font-bold tracking-widest text-amber-300 uppercase">
+              <div className="font-hud text-[10px] font-bold tracking-[0.18em] text-[#e3a024] uppercase">
                 Merchant Shop Interface
               </div>
               <h2 className="font-hud text-lg font-bold text-white">{shop.shop_name}</h2>
               {shop.shopkeeper && (
-                <div className="text-[11px] text-slate-300">
-                  เจ้าของร้าน: <span className="font-semibold text-cyan-200">{shop.shopkeeper}</span>
+                <div className="text-[11px] text-slate-400">
+                  เจ้าของร้าน: <span className="font-semibold text-slate-200">{shop.shopkeeper}</span>
                 </div>
               )}
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 rounded-full border border-amber-300/50 bg-amber-500/15 px-3.5 py-1.5 text-xs font-bold text-amber-200">
-              <Coins className="h-4 w-4 text-amber-300" />
+            <div className="flex items-center gap-1.5 rounded border border-[#e3a024]/45 bg-[#e3a024]/12 px-3 py-1.5 text-xs font-bold text-[#f0c05e]">
+              <Coins className="h-3.5 w-3.5 text-[#e3a024]" />
               <span>
                 {playerCol.toLocaleString()} {currency}
               </span>
@@ -75,7 +75,7 @@ export function ShopModal({ shop, playerCol, onBuyItem, onClose }: ShopModalProp
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg p-1.5 text-slate-300 hover:bg-white/10 hover:text-white"
+              className="rounded p-1.5 text-slate-400 transition hover:bg-white/[0.06] hover:text-white"
               aria-label="ปิดร้านค้า"
             >
               <X className="h-4 w-4" />
@@ -84,7 +84,7 @@ export function ShopModal({ shop, playerCol, onBuyItem, onClose }: ShopModalProp
         </div>
 
         {/* Item List */}
-        <div className="flex-1 space-y-3 overflow-y-auto p-5">
+        <div className="flex-1 space-y-2.5 overflow-y-auto p-5">
           {shop.items.map((item) => {
             const qty = getQty(item)
             const totalCost = item.price * qty
@@ -95,10 +95,10 @@ export function ShopModal({ shop, playerCol, onBuyItem, onClose }: ShopModalProp
             return (
               <div
                 key={item.name}
-                className={`rounded-xl border p-4 transition ${
+                className={`rounded-md border p-4 transition ${
                   outOfStock
-                    ? 'border-white/10 bg-slate-950/45 opacity-55'
-                    : 'border-cyan-200/25 bg-slate-900/65 hover:border-cyan-300/50'
+                    ? 'border-slate-300/10 bg-[#0b1018]/60 opacity-50'
+                    : 'border-slate-300/15 bg-[#0b1018] hover:border-[#e3a024]/50'
                 }`}
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -111,12 +111,12 @@ export function ShopModal({ shop, playerCol, onBuyItem, onClose }: ShopModalProp
                     </div>
                     <p className="mt-1 text-xs leading-relaxed text-slate-300">{item.description}</p>
                     <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px]">
-                      <span className="flex items-center gap-1 font-semibold text-cyan-200">
-                        <Package className="h-3.5 w-3.5" />
+                      <span className="flex items-center gap-1 font-medium text-slate-300">
+                        <Package className="h-3.5 w-3.5 text-slate-400" />
                         คงเหลือ: {outOfStock ? 'สินค้าหมด' : `${item.stock} ชิ้น`}
                       </span>
-                      <span className="flex items-center gap-1 font-bold text-amber-300">
-                        <Coins className="h-3.5 w-3.5" />
+                      <span className="flex items-center gap-1 font-bold text-[#f0c05e]">
+                        <Coins className="h-3.5 w-3.5 text-[#e3a024]" />
                         ราคา: {item.price.toLocaleString()} {currency} / ชิ้น
                       </span>
                     </div>
@@ -124,7 +124,7 @@ export function ShopModal({ shop, playerCol, onBuyItem, onClose }: ShopModalProp
 
                   {/* Quantity & Buy Controls */}
                   <div className="flex shrink-0 items-center gap-2 sm:flex-col sm:items-end">
-                    <div className="flex items-center rounded-lg border border-white/15 bg-slate-950/75">
+                    <div className="flex items-center rounded border border-slate-300/18 bg-[#121923]">
                       <button
                         type="button"
                         disabled={outOfStock || qty <= 1}
@@ -155,12 +155,12 @@ export function ShopModal({ shop, playerCol, onBuyItem, onClose }: ShopModalProp
                         onBuyItem(item, qty)
                         setQuantities((prev) => ({ ...prev, [item.name]: 1 }))
                       }}
-                      className={`font-hud flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-[11px] font-bold transition ${
+                      className={`font-hud flex items-center gap-1.5 rounded border px-3.5 py-2 text-[11px] font-bold transition ${
                         outOfStock
-                          ? 'cursor-not-allowed border-white/10 bg-slate-800 text-slate-400'
+                          ? 'cursor-not-allowed border-slate-300/10 bg-white/[0.04] text-slate-500'
                           : notEnoughCol
-                            ? 'cursor-not-allowed border-rose-400/40 bg-rose-500/15 text-rose-200'
-                            : 'border-amber-300/70 bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 shadow-[0_0_16px_rgba(251,191,36,0.35)] hover:brightness-110'
+                            ? 'cursor-not-allowed border-rose-400/35 bg-rose-500/12 text-rose-200'
+                            : 'border-[#f5be58]/60 bg-[#e3a024] text-slate-950 hover:bg-[#f0b43c]'
                       }`}
                     >
                       <ShoppingCart className="h-3.5 w-3.5" />
@@ -178,14 +178,14 @@ export function ShopModal({ shop, playerCol, onBuyItem, onClose }: ShopModalProp
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-white/10 bg-slate-950/60 px-6 py-3">
+        <div className="flex items-center justify-between border-t border-slate-300/12 bg-[#0b1018] px-6 py-3">
           <span className="text-[11px] text-slate-400">
             ไอเทมที่ซื้อจะเข้ากระเป๋าพร้อมคำอธิบายและหัก {currency} อัตโนมัติ
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-cyan-200/35 bg-white/10 px-4 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-white/20"
+            className="rounded border border-slate-300/20 bg-white/[0.05] px-4 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-white/[0.1]"
           >
             ปิดหน้าร้านค้า
           </button>

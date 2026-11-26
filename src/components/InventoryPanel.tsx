@@ -27,10 +27,10 @@ interface InventoryPanelProps {
 }
 
 const CATEGORY_LABELS: Record<NonNullable<InventoryItem['category']>, { label: string; color: string }> = {
-  equipment: { label: 'อาวุธ / อุปกรณ์', color: 'bg-sky-500/20 text-sky-200 border-sky-300/35' },
-  consumable: { label: 'ไอเทมกดใช้', color: 'bg-emerald-500/20 text-emerald-200 border-emerald-300/35' },
-  material: { label: 'วัตถุดิบ', color: 'bg-amber-500/20 text-amber-200 border-amber-300/35' },
-  special: { label: 'ไอเทมพิเศษ', color: 'bg-pink-500/20 text-pink-200 border-pink-300/35' },
+  equipment: { label: 'อาวุธ / อุปกรณ์', color: 'bg-white/8 text-slate-200 border-slate-300/25' },
+  consumable: { label: 'ไอเทมกดใช้', color: 'bg-emerald-500/15 text-emerald-200 border-emerald-400/30' },
+  material: { label: 'วัตถุดิบ', color: 'bg-[#e3a024]/15 text-amber-200 border-[#e3a024]/35' },
+  special: { label: 'ไอเทมพิเศษ', color: 'bg-rose-500/15 text-rose-200 border-rose-400/30' },
 }
 
 const WIKI_QUICK_TOPICS = ['Asuna', 'Argo', 'Philia', 'Elucidator', 'Laughing Coffin', 'Floor 22']
@@ -115,16 +115,16 @@ export function InventoryPanel({
   const activeCat = CATEGORY_LABELS[activeItem?.category ?? 'special']
 
   return (
-    <div className="sao-panel rounded-xl p-4">
+    <div className="sao-panel rounded-md p-4">
       {/* Tab Switcher */}
-      <div className="grid grid-cols-3 gap-1 rounded-lg border border-white/10 bg-slate-950/50 p-1">
+      <div className="grid grid-cols-3 gap-1 rounded border border-slate-300/12 bg-[#0b1018] p-1">
         <button
           type="button"
           onClick={() => setTab('inventory')}
-          className={`flex items-center justify-center gap-1 rounded-md py-1.5 text-[11px] font-semibold transition ${
+          className={`flex items-center justify-center gap-1 rounded py-1.5 text-[11px] font-semibold transition ${
             tab === 'inventory'
-              ? 'bg-cyan-400/20 text-cyan-100'
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-[#e3a024]/20 text-amber-100'
+              : 'text-slate-400 hover:text-slate-200'
           }`}
         >
           <Backpack className="h-3.5 w-3.5" />
@@ -133,10 +133,10 @@ export function InventoryPanel({
         <button
           type="button"
           onClick={() => setTab('world')}
-          className={`flex items-center justify-center gap-1 rounded-md py-1.5 text-[11px] font-semibold transition ${
+          className={`flex items-center justify-center gap-1 rounded py-1.5 text-[11px] font-semibold transition ${
             tab === 'world'
-              ? 'bg-cyan-400/20 text-cyan-100'
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-[#e3a024]/20 text-amber-100'
+              : 'text-slate-400 hover:text-slate-200'
           }`}
         >
           <GitBranch className="h-3.5 w-3.5" />
@@ -145,10 +145,10 @@ export function InventoryPanel({
         <button
           type="button"
           onClick={() => setTab('wiki')}
-          className={`flex items-center justify-center gap-1 rounded-md py-1.5 text-[11px] font-semibold transition ${
+          className={`flex items-center justify-center gap-1 rounded py-1.5 text-[11px] font-semibold transition ${
             tab === 'wiki'
-              ? 'bg-cyan-400/20 text-cyan-100'
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-[#e3a024]/20 text-amber-100'
+              : 'text-slate-400 hover:text-slate-200'
           }`}
         >
           <BookOpen className="h-3.5 w-3.5" />
@@ -161,16 +161,16 @@ export function InventoryPanel({
           className="mt-3 space-y-2.5"
           onMouseLeave={() => setHoveredItem(null)}
         >
-          <div className="flex items-center justify-between text-[10px] text-slate-400">
+          <div className="flex items-center justify-between text-[10px] text-slate-500">
             <span className="flex items-center gap-1">
-              <Info className="h-3 w-3 text-cyan-300" />
+              <Info className="h-3 w-3 text-slate-400" />
               ชี้เมาส์หรือแตะที่ไอเทมเพื่อดูสรรพคุณ
             </span>
           </div>
 
-          <div className="max-h-48 space-y-1.5 overflow-y-auto pr-1">
+          <div className="max-h-44 space-y-1.5 overflow-y-auto pr-1">
             {inventory.length === 0 ? (
-              <p className="py-4 text-center text-xs text-slate-400">กระเป๋าว่างเปล่า</p>
+              <p className="py-4 text-center text-xs text-slate-500">กระเป๋าว่างเปล่า</p>
             ) : (
               inventory.map((item) => {
                 const isSelected = activeItem?.name === item.name
@@ -181,15 +181,15 @@ export function InventoryPanel({
                     onClick={() =>
                       setPinnedItem((prev) => (prev?.name === item.name ? null : item))
                     }
-                    className={`flex cursor-pointer items-center justify-between rounded-md border px-3 py-2 text-xs transition ${
+                    className={`flex cursor-pointer items-center justify-between rounded border px-3 py-2 text-xs transition ${
                       isSelected
-                        ? 'border-cyan-300/70 bg-cyan-500/15 shadow-[0_0_12px_rgba(56,189,248,0.18)]'
-                        : 'border-white/10 bg-slate-900/55 hover:border-cyan-300/35'
+                        ? 'border-[#e3a024]/60 bg-[#e3a024]/10'
+                        : 'border-slate-300/10 bg-white/[0.025] hover:border-slate-300/25'
                     }`}
                   >
                     <div className="min-w-0">
                       <span className="font-medium text-slate-100">{item.name}</span>
-                      <span className="ml-2 rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-cyan-200">
+                      <span className="ml-2 rounded bg-white/8 px-1.5 py-0.5 text-[10px] text-slate-300">
                         x{item.quantity}
                       </span>
                     </div>
@@ -201,7 +201,7 @@ export function InventoryPanel({
                           e.stopPropagation()
                           onQuickAction(`หยิบใช้ไอเทม "${item.name}" จากกระเป๋า`)
                         }}
-                        className="shrink-0 rounded border border-cyan-300/40 bg-cyan-500/15 px-2 py-0.5 text-[10px] font-semibold text-cyan-100 hover:bg-cyan-400/30 disabled:opacity-45"
+                        className="shrink-0 rounded border border-slate-300/20 bg-white/[0.05] px-2 py-0.5 text-[10px] font-medium text-slate-200 hover:border-[#e3a024]/50 hover:text-amber-200 disabled:opacity-45"
                       >
                         ใช้ไอเทม
                       </button>
@@ -213,10 +213,10 @@ export function InventoryPanel({
                           e.stopPropagation()
                           onToggleEquip(item.name)
                         }}
-                        className={`shrink-0 rounded border px-2 py-0.5 text-[10px] font-semibold transition ${
+                        className={`shrink-0 rounded border px-2 py-0.5 text-[10px] font-medium transition ${
                           equippedItems.includes(item.name)
-                            ? 'border-emerald-300/70 bg-emerald-500/25 text-emerald-100'
-                            : 'border-sky-300/35 bg-sky-500/10 text-sky-200 hover:bg-sky-400/25'
+                            ? 'border-emerald-400/50 bg-emerald-500/15 text-emerald-200'
+                            : 'border-slate-300/20 bg-white/[0.04] text-slate-300 hover:border-[#e3a024]/50 hover:text-amber-200'
                         }`}
                       >
                         {equippedItems.includes(item.name) ? 'กำลังสวมใส่' : 'สวมใส่'}
@@ -228,23 +228,23 @@ export function InventoryPanel({
             )}
           </div>
 
-          {/* SAO Item Description Inspector Tooltip Card */}
+          {/* SAO Item Description Card */}
           {activeItem && (
-            <div className="animate-alert-pop rounded-lg border border-cyan-300/55 bg-slate-950/90 p-3 text-xs shadow-[0_0_20px_rgba(56,189,248,0.22)]">
+            <div className="animate-alert-pop rounded border border-slate-300/20 bg-[#0b1018] p-3 text-xs">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-raj text-sm font-bold text-cyan-100">
+                <span className="font-raj text-sm font-bold text-slate-100">
                   {activeItem.name}
                 </span>
-                <span className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold ${activeCat.color}`}>
+                <span className={`rounded border px-1.5 py-0.5 text-[10px] font-medium ${activeCat.color}`}>
                   {activeCat.label}
                 </span>
               </div>
-              <div className="mt-1.5 leading-relaxed text-slate-200">
+              <div className="mt-1.5 leading-relaxed text-slate-300">
                 {activeDesc ? (
                   <p>{activeDesc}</p>
                 ) : loadingItemName === activeItem.name ? (
-                  <span className="flex items-center gap-1.5 text-[11px] text-cyan-300">
-                    <Loader2 className="h-3 w-3 animate-spin" />
+                  <span className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                    <Loader2 className="h-3 w-3 animate-spin text-[#e3a024]" />
                     Cardinal กำลังวิเคราะห์คำอธิบายไอเทม...
                   </span>
                 ) : null}
@@ -254,23 +254,23 @@ export function InventoryPanel({
 
           {/* Marriage Shared Inventory & Shared Home */}
           {isMarried && (
-            <div className="rounded-lg border border-amber-300/45 bg-amber-500/10 p-3">
-              <div className="flex items-center justify-between text-xs font-bold text-amber-200">
+            <div className="rounded border border-[#e3a024]/40 bg-[#e3a024]/[0.07] p-3">
+              <div className="flex items-center justify-between text-xs font-semibold text-amber-200">
                 <span className="flex items-center gap-1.5">
                   <PackageOpen className="h-3.5 w-3.5" />
                   Shared Inventory ({worldState.player.spouse})
                 </span>
               </div>
               {sharedHome && (
-                <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-amber-100/90">
-                  <Home className="h-3.5 w-3.5 text-amber-300" />
+                <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-amber-100/85">
+                  <Home className="h-3.5 w-3.5 text-[#e3a024]" />
                   <span>บ้านร่วมกัน: {sharedHome}</span>
                 </div>
               )}
-              <div className="mt-2 space-y-1 text-[11px] text-slate-200">
+              <div className="mt-2 space-y-1 text-[11px] text-slate-300">
                 {sharedInventory.length === 0 ? (
-                  <p className="text-amber-100/70">
-                    ปลดล็อกช่องเก็บของร่วมแล้ว! พิมพ์เก็บ/แบ่งไอเทมกับคู่สมรสได้ทันที
+                  <p className="text-amber-100/65">
+                    ปลดล็อกช่องเก็บของร่วมแล้ว พิมพ์เก็บหรือแบ่งไอเทมกับคู่สมรสได้ทันที
                   </p>
                 ) : (
                   sharedInventory.map((item) => (
@@ -280,7 +280,7 @@ export function InventoryPanel({
                       onClick={() =>
                         setPinnedItem((prev) => (prev?.name === item.name ? null : item))
                       }
-                      className="flex cursor-pointer justify-between rounded px-1.5 py-0.5 hover:bg-amber-400/15"
+                      className="flex cursor-pointer justify-between rounded px-1.5 py-0.5 hover:bg-[#e3a024]/15"
                     >
                       <span>{item.name}</span>
                       <span className="text-amber-200">x{item.quantity}</span>
@@ -294,20 +294,20 @@ export function InventoryPanel({
       ) : tab === 'world' ? (
         <div className="mt-3 space-y-3 text-xs">
           <div>
-            <div className="flex items-center gap-1.5 font-semibold text-cyan-200">
-              <Users className="h-3.5 w-3.5" />
+            <div className="flex items-center gap-1.5 font-semibold text-slate-200">
+              <Users className="h-3.5 w-3.5 text-[#e3a024]" />
               สมาชิกปาร์ตี้ปัจจุบัน
             </div>
             {partyMembers.length === 0 ? (
-              <p className="mt-1 text-[11px] text-slate-400">กำลังเดินทางแบบ Solo Player</p>
+              <p className="mt-1 text-[11px] text-slate-500">กำลังเดินทางแบบ Solo Player</p>
             ) : (
               <div className="mt-1.5 flex flex-wrap gap-1.5">
                 {partyMembers.map((member) => (
                   <span
                     key={member}
-                    className="flex items-center gap-1.5 rounded-full border border-sky-300/40 bg-sky-500/20 py-0.5 pl-0.5 pr-2.5 text-[11px] text-sky-100"
+                    className="flex items-center gap-1.5 rounded-full border border-slate-300/25 bg-white/[0.05] py-0.5 pl-0.5 pr-2.5 text-[11px] text-slate-200"
                   >
-                    <CharacterAvatar name={member} size="xs" ringClassName="border-sky-300" />
+                    <CharacterAvatar name={member} size="xs" ringClassName="border-slate-300/60" />
                     {member}
                   </span>
                 ))}
@@ -315,23 +315,23 @@ export function InventoryPanel({
             )}
           </div>
 
-          <div className="border-t border-white/10 pt-2.5">
+          <div className="border-t border-slate-200/10 pt-2.5">
             <div className="flex items-center gap-1.5 font-semibold text-amber-200">
-              <GitBranch className="h-3.5 w-3.5" />
+              <GitBranch className="h-3.5 w-3.5 text-[#e3a024]" />
               Butterfly Effects &amp; World Events
             </div>
             <div className="mt-1.5 max-h-36 space-y-1.5 overflow-y-auto pr-1">
               {butterflyEffects.length === 0 ? (
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-slate-500">
                   ยังไม่มีการเปลี่ยนแปลงเส้นเรื่องสำคัญในตอนนี้
                 </p>
               ) : (
                 butterflyEffects.map((ev, i) => (
                   <div
                     key={i}
-                    className="rounded border border-amber-300/20 bg-slate-950/60 px-2.5 py-1.5 text-[11px] text-amber-100"
+                    className="rounded border border-slate-300/10 bg-[#0b1018] px-2.5 py-1.5 text-[11px] text-slate-300"
                   >
-                    • {ev}
+                    · {ev}
                   </div>
                 ))
               )}
@@ -340,17 +340,17 @@ export function InventoryPanel({
         </div>
       ) : (
         <div className="mt-3 space-y-2.5 text-xs">
-          <div className="text-[11px] text-slate-300">
-            เชื่อมต่อตรงกับ{' '}
+          <div className="text-[11px] text-slate-400">
+            เชื่อมต่อกับ{' '}
             <a
               href="https://swordartonline.fandom.com/wiki/Sword_Art_Online_Wiki"
               target="_blank"
               rel="noreferrer"
-              className="font-semibold text-cyan-300 underline hover:text-cyan-200"
+              className="font-medium text-amber-300 underline hover:text-amber-200"
             >
               SAO Fandom Wiki
             </a>{' '}
-            (ดึงข้อมูลอัตโนมัติทุกเทิร์น &amp; ค้นหาเองได้ที่นี่)
+            (ดึงข้อมูลอัตโนมัติทุกเทิร์น &amp; ค้นหาได้ที่นี่)
           </div>
 
           <form onSubmit={handleWikiSubmit} className="flex gap-1.5">
@@ -358,13 +358,13 @@ export function InventoryPanel({
               type="text"
               value={wikiQuery}
               onChange={(e) => setWikiQuery(e.target.value)}
-              placeholder="ค้นหาตัวละคร ชั้น บอส อาวุธ (ภาษาอังกฤษ)..."
-              className="flex-1 rounded-md border border-cyan-200/25 bg-slate-950/75 px-2.5 py-1.5 text-xs text-white placeholder-slate-400 focus:border-cyan-400 focus:outline-none"
+              placeholder="ค้นหาตัวละคร ชั้น บอส อาวุธ..."
+              className="flex-1 rounded border border-slate-300/20 bg-[#0b1018] px-2.5 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:border-[#e3a024] focus:outline-none"
             />
             <button
               type="submit"
               disabled={wikiLoading || !wikiQuery.trim()}
-              className="flex items-center gap-1 rounded-md border border-cyan-300/50 bg-cyan-500/20 px-2.5 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-400/35 disabled:opacity-45"
+              className="flex items-center gap-1 rounded border border-slate-300/25 bg-white/[0.06] px-2.5 py-1.5 text-xs font-medium text-slate-200 hover:border-[#e3a024]/50 disabled:opacity-45"
             >
               {wikiLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
             </button>
@@ -376,7 +376,7 @@ export function InventoryPanel({
                 key={topic}
                 type="button"
                 onClick={() => void handleWikiSearch(topic)}
-                className="rounded border border-white/15 bg-white/5 px-2 py-0.5 text-[10px] text-slate-200 hover:border-cyan-300/45 hover:bg-cyan-500/15"
+                className="rounded border border-slate-300/12 bg-white/[0.03] px-2 py-0.5 text-[10px] text-slate-300 hover:border-[#e3a024]/45 hover:text-amber-200"
               >
                 {topic}
               </button>
@@ -385,15 +385,15 @@ export function InventoryPanel({
 
           <div className="max-h-56 space-y-2 overflow-y-auto pr-1">
             {wikiLoading ? (
-              <div className="flex items-center justify-center gap-2 py-6 text-cyan-200">
-                <Loader2 className="h-4 w-4 animate-spin" />
+              <div className="flex items-center justify-center gap-2 py-6 text-slate-300">
+                <Loader2 className="h-4 w-4 animate-spin text-[#e3a024]" />
                 <span>กำลังดึงข้อมูลจาก SAO Fandom Wiki...</span>
               </div>
             ) : wikiResults.length > 0 ? (
               wikiResults.map((entry) => (
                 <div
                   key={entry.title}
-                  className="rounded-lg border border-cyan-300/25 bg-slate-950/70 p-2.5"
+                  className="rounded border border-slate-300/15 bg-[#0b1018] p-2.5"
                 >
                   <div className="flex items-start gap-2.5">
                     {entry.thumbnailUrl && (
@@ -404,25 +404,25 @@ export function InventoryPanel({
                         onError={(e) => {
                           e.currentTarget.style.display = 'none'
                         }}
-                        className="h-12 w-12 shrink-0 rounded-md border border-white/15 object-cover"
+                        className="h-12 w-12 shrink-0 rounded border border-slate-300/15 object-cover"
                       />
                     )}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-1">
-                        <span className="font-raj text-sm font-bold text-cyan-100 truncate">
+                        <span className="font-raj truncate text-sm font-bold text-slate-100">
                           {entry.title}
                         </span>
                         <a
                           href={entry.url}
                           target="_blank"
                           rel="noreferrer"
-                          className="shrink-0 text-cyan-300 hover:text-cyan-100"
+                          className="shrink-0 text-slate-400 hover:text-amber-300"
                           title="เปิดบน SAO Fandom Wiki"
                         >
                           <ExternalLink className="h-3.5 w-3.5" />
                         </a>
                       </div>
-                      <p className="mt-1 line-clamp-3 text-[11px] leading-relaxed text-slate-300">
+                      <p className="mt-1 line-clamp-3 text-[11px] leading-relaxed text-slate-400">
                         {entry.summary}
                       </p>
                       <button
@@ -433,9 +433,9 @@ export function InventoryPanel({
                             `ค้นหาและพบเจอ/อ้างอิงเรื่องราวเกี่ยวกับ "${entry.title}" ตามข้อมูลใน SAO Wiki`
                           )
                         }
-                        className="mt-1.5 flex items-center gap-1 rounded border border-cyan-300/35 bg-cyan-500/15 px-2 py-0.5 text-[10px] font-semibold text-cyan-100 hover:bg-cyan-400/30 disabled:opacity-45"
+                        className="mt-1.5 flex items-center gap-1 rounded border border-slate-300/20 bg-white/[0.04] px-2 py-0.5 text-[10px] font-medium text-slate-200 hover:border-[#e3a024]/50 hover:text-amber-200 disabled:opacity-45"
                       >
-                        <Sparkles className="h-3 w-3" />
+                        <Sparkles className="h-3 w-3 text-[#e3a024]" />
                         นำเข้าสู่เนื้อเรื่อง
                       </button>
                     </div>
@@ -443,7 +443,7 @@ export function InventoryPanel({
                 </div>
               ))
             ) : wikiSearchedOnce ? (
-              <p className="py-4 text-center text-[11px] text-slate-400">
+              <p className="py-4 text-center text-[11px] text-slate-500">
                 ไม่พบบทความที่ตรงกับคำค้นหา
               </p>
             ) : null}

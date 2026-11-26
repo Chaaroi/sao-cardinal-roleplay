@@ -134,12 +134,12 @@ export function DiceRollModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md">
-      <div className="sao-panel animate-alert-pop max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#06090e]/82 p-4 backdrop-blur-sm">
+      <div className="sao-panel animate-alert-pop max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-lg p-6">
         {/* Header */}
-        <div className="flex items-start justify-between gap-3 border-b border-cyan-200/20 pb-3">
+        <div className="flex items-start justify-between gap-3 border-b border-slate-300/15 pb-3.5">
           <div>
-            <div className="font-hud flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-amber-300 uppercase">
+            <div className="font-hud flex items-center gap-1.5 text-[10px] font-bold tracking-[0.18em] text-[#e3a024] uppercase">
               <Dices className="h-3.5 w-3.5" />
               Cardinal Tactical Choice &amp; Probability Check (1d20)
             </div>
@@ -149,7 +149,7 @@ export function DiceRollModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-300 hover:bg-white/10 hover:text-white"
+            className="rounded p-1.5 text-slate-400 transition hover:bg-white/[0.06] hover:text-white"
             aria-label="พับหน้าทอยเต๋า"
           >
             <X className="h-4 w-4" />
@@ -159,7 +159,7 @@ export function DiceRollModal({
         {/* Multiple Tactical Options Selector */}
         {computedOptions.length > 1 && (
           <div className="mt-4">
-            <div className="mb-2 text-[11px] font-bold tracking-wide text-cyan-200">
+            <div className="mb-2 text-[11px] font-semibold tracking-wide text-slate-300">
               เลือกแนวทางที่ต้องการ (โอกาสสำเร็จคำนวณจาก Stat และอุปกรณ์ปัจจุบัน):
             </div>
             <div className="grid gap-2 sm:grid-cols-3">
@@ -167,10 +167,10 @@ export function DiceRollModal({
                 const isSelected = entry.opt.id === activeOpt.id
                 const chanceColor =
                   entry.successChancePct >= 65
-                    ? 'border-emerald-300/60 bg-emerald-500/20 text-emerald-200'
+                    ? 'border-emerald-400/45 bg-emerald-500/15 text-emerald-200'
                     : entry.successChancePct >= 40
-                      ? 'border-amber-300/60 bg-amber-500/20 text-amber-200'
-                      : 'border-rose-400/60 bg-rose-500/20 text-rose-200'
+                      ? 'border-[#e3a024]/50 bg-[#e3a024]/15 text-[#f0c05e]'
+                      : 'border-rose-400/45 bg-rose-500/15 text-rose-200'
 
                 return (
                   <button
@@ -178,10 +178,10 @@ export function DiceRollModal({
                     type="button"
                     disabled={isRolling || finalD20 !== null}
                     onClick={() => setSelectedId(entry.opt.id)}
-                    className={`flex flex-col justify-between rounded-xl border p-3 text-left transition ${
+                    className={`flex flex-col justify-between rounded-md border p-3 text-left transition ${
                       isSelected
-                        ? 'border-cyan-300 bg-cyan-500/20 shadow-[0_0_16px_rgba(56,189,248,0.28)]'
-                        : 'border-white/15 bg-slate-900/60 hover:border-cyan-300/40'
+                        ? 'border-[#e3a024] bg-[#e3a024]/15'
+                        : 'border-slate-300/15 bg-[#0b1018] hover:border-slate-300/35'
                     } disabled:cursor-default`}
                   >
                     <div>
@@ -192,12 +192,12 @@ export function DiceRollModal({
                         </p>
                       )}
                     </div>
-                    <div className="mt-2.5 flex flex-wrap items-center justify-between gap-1 border-t border-white/10 pt-2">
-                      <span className="font-hud text-[10px] text-cyan-200">
+                    <div className="mt-2.5 flex flex-wrap items-center justify-between gap-1 border-t border-slate-300/10 pt-2">
+                      <span className="font-hud text-[10px] text-slate-300">
                         {entry.opt.required_stats.join('+')} (DC {entry.opt.dc})
                       </span>
                       <span
-                        className={`font-hud rounded-full border px-2 py-0.5 text-[10px] font-bold ${chanceColor}`}
+                        className={`font-hud rounded border px-1.5 py-0.5 text-[10px] font-bold ${chanceColor}`}
                       >
                         สำเร็จ {entry.successChancePct}%
                       </span>
@@ -211,13 +211,13 @@ export function DiceRollModal({
 
         {/* Active Option Stat & Equipment Modifiers */}
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <div className="rounded-xl border border-cyan-300/25 bg-slate-950/60 p-3">
-            <div className="flex items-center justify-between gap-2 text-[11px] font-bold text-cyan-200">
+          <div className="rounded-md border border-slate-300/15 bg-[#0b1018] p-3">
+            <div className="flex items-center justify-between gap-2 text-[11px] font-bold text-slate-200">
               <span className="flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5" />
+                <Sparkles className="h-3.5 w-3.5 text-[#e3a024]" />
                 Stat ที่ใช้ ({activeOpt.label})
               </span>
-              <span className="font-hud text-amber-300">โอกาสสำเร็จ {successChancePct}%</span>
+              <span className="font-hud text-[#f0c05e]">โอกาสสำเร็จ {successChancePct}%</span>
             </div>
             <div className="mt-2 space-y-1 text-xs">
               {statMod.items.map((s) => (
@@ -225,7 +225,7 @@ export function DiceRollModal({
                   <span className="font-semibold text-slate-200">
                     {s.stat} ({s.value})
                   </span>
-                  <span className="font-hud font-bold text-cyan-300">
+                  <span className="font-hud font-bold text-[#f0c05e]">
                     {s.bonus >= 0 ? `+${s.bonus}` : s.bonus}
                   </span>
                 </div>
@@ -233,14 +233,14 @@ export function DiceRollModal({
             </div>
           </div>
 
-          <div className="rounded-xl border border-sky-300/25 bg-slate-950/60 p-3">
-            <div className="flex items-center gap-1.5 text-[11px] font-bold text-sky-200">
-              <Swords className="h-3.5 w-3.5" />
+          <div className="rounded-md border border-slate-300/15 bg-[#0b1018] p-3">
+            <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-200">
+              <Swords className="h-3.5 w-3.5 text-[#e3a024]" />
               โบนัสจากอุปกรณ์ที่สวมใส่
             </div>
             <div className="mt-2 space-y-1 text-xs">
               {equipMod.items.length === 0 ? (
-                <div className="text-[11px] text-slate-400">
+                <div className="text-[11px] text-slate-500">
                   ไม่มีอุปกรณ์ที่เสริมสายนี้ (+0)
                 </div>
               ) : (
@@ -261,14 +261,14 @@ export function DiceRollModal({
 
         {/* Win / Loss Stakes */}
         <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
-          <div className="rounded-lg border border-emerald-400/35 bg-emerald-500/10 p-3 text-xs">
+          <div className="rounded-md border border-emerald-400/30 bg-emerald-500/8 p-3 text-xs">
             <div className="flex items-center gap-1.5 font-bold text-emerald-300">
               <CheckCircle2 className="h-3.5 w-3.5" />
               ถ้าทอยชนะ (รวม ≥ {activeOpt.dc})
             </div>
             <p className="mt-1 leading-relaxed text-emerald-100/90">{activeOpt.on_success}</p>
           </div>
-          <div className="rounded-lg border border-rose-400/35 bg-rose-500/10 p-3 text-xs">
+          <div className="rounded-md border border-rose-400/30 bg-rose-500/8 p-3 text-xs">
             <div className="flex items-center gap-1.5 font-bold text-rose-300">
               <XCircle className="h-3.5 w-3.5" />
               ถ้าทอยแพ้ (รวม &lt; {activeOpt.dc})
@@ -278,15 +278,15 @@ export function DiceRollModal({
         </div>
 
         {/* D20 Roller Visual */}
-        <div className="mt-4 flex flex-col items-center rounded-xl border border-cyan-200/20 bg-slate-950/75 p-4 text-center">
-          <div className="mb-2 flex flex-wrap items-center justify-center gap-2 text-[11px] font-semibold tracking-wider text-slate-300 uppercase">
+        <div className="mt-4 flex flex-col items-center rounded-md border border-slate-300/15 bg-[#0b1018] p-4 text-center">
+          <div className="mb-2.5 flex flex-wrap items-center justify-center gap-2 text-[11px] font-semibold tracking-wider text-slate-300 uppercase">
             <span>
-              Target: <strong className="font-hud text-amber-300">DC {activeOpt.dc}</strong>
+              Target: <strong className="font-hud text-[#f0c05e]">DC {activeOpt.dc}</strong>
             </span>
             <span>•</span>
             <span>
               โบนัสรวม:{' '}
-              <strong className="font-hud text-cyan-300">
+              <strong className="font-hud text-white">
                 {totalBonus >= 0 ? `+${totalBonus}` : totalBonus}
               </strong>
             </span>
@@ -300,12 +300,12 @@ export function DiceRollModal({
           <div
             className={`sao-hex flex h-24 w-24 items-center justify-center border-2 transition-all duration-300 ${
               isRolling
-                ? 'animate-spin border-cyan-300 bg-cyan-500/25 shadow-[0_0_28px_rgba(56,189,248,0.65)]'
+                ? 'animate-spin border-[#e3a024] bg-[#e3a024]/20 text-[#f0c05e]'
                 : outcome === null
-                  ? 'border-cyan-300/60 bg-slate-900 text-cyan-100'
+                  ? 'border-[#e3a024]/60 bg-[#121923] text-white'
                   : isWin
-                    ? 'border-emerald-300 bg-emerald-500/25 text-emerald-200 shadow-[0_0_32px_rgba(52,211,153,0.6)]'
-                    : 'border-rose-400 bg-rose-500/25 text-rose-200 shadow-[0_0_32px_rgba(244,63,94,0.6)]'
+                    ? 'border-emerald-400 bg-emerald-500/20 text-emerald-200'
+                    : 'border-rose-400 bg-rose-500/20 text-rose-200'
             }`}
           >
             <span className="font-hud text-3xl font-extrabold">{displayNumber}</span>
@@ -319,17 +319,17 @@ export function DiceRollModal({
                 <span className="text-slate-400">(vs DC {activeOpt.dc})</span>
               </div>
               <div
-                className={`font-hud text-base font-extrabold tracking-widest uppercase ${
+                className={`font-hud text-base font-bold tracking-[0.14em] uppercase ${
                   isWin ? 'text-emerald-300' : 'text-rose-300'
                 }`}
               >
                 {outcome === 'CRITICAL SUCCESS'
-                  ? '★ CRITICAL SUCCESS! ชนะขาดลอย!'
+                  ? 'CRITICAL SUCCESS — ชนะขาดลอย'
                   : outcome === 'SUCCESS'
-                    ? '✓ SUCCESS! ทอยชนะ!'
+                    ? 'SUCCESS — ทอยชนะ'
                     : outcome === 'CRITICAL FAIL'
-                      ? '✖ CRITICAL FAIL! พลาดท่าอย่างจัง!'
-                      : '✕ FAILED! ทอยแพ้!'}
+                      ? 'CRITICAL FAIL — พลาดท่าอย่างจัง'
+                      : 'FAILED — ทอยแพ้'}
               </div>
             </div>
           )}
@@ -340,7 +340,7 @@ export function DiceRollModal({
                 type="button"
                 disabled={isRolling}
                 onClick={() => setIsRolling(true)}
-                className="font-hud flex items-center gap-2 rounded-lg border border-amber-200 bg-gradient-to-r from-amber-400 to-yellow-300 px-6 py-2.5 text-xs font-extrabold tracking-widest text-slate-950 uppercase shadow-[0_0_24px_rgba(251,191,36,0.5)] transition hover:brightness-110 disabled:opacity-60"
+                className="font-hud flex items-center gap-2 rounded border border-[#f5be58]/60 bg-[#e3a024] px-6 py-2.5 text-xs font-bold tracking-[0.14em] text-slate-950 uppercase transition hover:bg-[#f0b43c] disabled:opacity-60"
               >
                 <Dices className="h-4 w-4" />
                 {isRolling ? 'กำลังทอย...' : 'ทอยลูกเต๋า (Roll 1d20)'}
@@ -349,10 +349,10 @@ export function DiceRollModal({
               <button
                 type="button"
                 onClick={handleConfirm}
-                className={`font-hud flex items-center gap-2 rounded-lg border px-6 py-2.5 text-xs font-extrabold tracking-wider uppercase transition hover:brightness-110 ${
+                className={`font-hud flex items-center gap-2 rounded border px-6 py-2.5 text-xs font-bold tracking-wider uppercase transition ${
                   isWin
-                    ? 'border-emerald-200 bg-gradient-to-r from-emerald-400 to-teal-300 text-slate-950 shadow-[0_0_20px_rgba(52,211,153,0.45)]'
-                    : 'border-rose-200 bg-gradient-to-r from-rose-500 to-orange-400 text-white shadow-[0_0_20px_rgba(244,63,94,0.45)]'
+                    ? 'border-emerald-300/60 bg-emerald-400 text-slate-950 hover:bg-emerald-300'
+                    : 'border-rose-300/60 bg-rose-500 text-white hover:bg-rose-400'
                 }`}
               >
                 <Shield className="h-4 w-4" />

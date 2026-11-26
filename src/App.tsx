@@ -745,10 +745,10 @@ export function App() {
             <button
               type="button"
               onClick={() => setMobileTab('chat')}
-              className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg border py-2 text-xs font-bold ${
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded border py-2 text-xs font-semibold transition ${
                 mobileTab === 'chat'
-                  ? 'border-cyan-300 bg-cyan-400/20 text-white'
-                  : 'border-white/15 bg-slate-900/60 text-slate-300'
+                  ? 'border-[#e3a024]/70 bg-[#e3a024]/15 text-amber-100'
+                  : 'border-slate-300/15 bg-white/[0.03] text-slate-300'
               }`}
             >
               <MessageSquare className="h-4 w-4" />
@@ -757,10 +757,10 @@ export function App() {
             <button
               type="button"
               onClick={() => setMobileTab('hud')}
-              className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg border py-2 text-xs font-bold ${
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded border py-2 text-xs font-semibold transition ${
                 mobileTab === 'hud'
-                  ? 'border-cyan-300 bg-cyan-400/20 text-white'
-                  : 'border-white/15 bg-slate-900/60 text-slate-300'
+                  ? 'border-[#e3a024]/70 bg-[#e3a024]/15 text-amber-100'
+                  : 'border-slate-300/15 bg-white/[0.03] text-slate-300'
               }`}
             >
               <Users className="h-4 w-4" />

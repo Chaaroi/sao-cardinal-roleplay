@@ -14,12 +14,21 @@ export function SystemAlertOverlay({ alerts, onDismiss }: SystemAlertOverlayProp
       {alerts.map((alert) => {
         const styles =
           alert.variant === 'marriage'
-            ? 'border-amber-300/80 bg-gradient-to-r from-amber-500/25 via-slate-900/90 to-amber-500/20 text-amber-100 shadow-[0_0_25px_rgba(251,191,36,0.35)]'
+            ? 'border-[#e3a024]/70 bg-[#121923]/95 text-amber-100'
             : alert.variant === 'affection'
-              ? 'border-pink-300/75 bg-gradient-to-r from-pink-500/25 via-slate-900/90 to-cyan-500/15 text-pink-100 shadow-[0_0_22px_rgba(244,114,182,0.3)]'
+              ? 'border-rose-300/45 bg-[#121923]/95 text-rose-100'
               : alert.variant === 'warning'
-                ? 'border-orange-400/80 bg-gradient-to-r from-orange-500/25 via-slate-900/90 to-red-500/20 text-orange-100 shadow-[0_0_22px_rgba(251,146,60,0.3)]'
-                : 'border-cyan-300/75 bg-gradient-to-r from-cyan-500/25 via-slate-900/90 to-slate-800/85 text-cyan-50 shadow-[0_0_22px_rgba(56,189,248,0.28)]'
+                ? 'border-amber-400/55 bg-[#121923]/95 text-amber-100'
+                : 'border-slate-300/25 bg-[#121923]/95 text-slate-100'
+
+        const badgeColor =
+          alert.variant === 'marriage'
+            ? 'border-[#e3a024]/50 bg-[#e3a024]/15 text-[#f0c05e]'
+            : alert.variant === 'affection'
+              ? 'border-rose-300/35 bg-rose-400/12 text-rose-200'
+              : alert.variant === 'warning'
+                ? 'border-amber-400/40 bg-amber-400/12 text-amber-200'
+                : 'border-slate-300/20 bg-white/[0.05] text-slate-200'
 
         const Icon =
           alert.variant === 'marriage'
@@ -33,21 +42,21 @@ export function SystemAlertOverlay({ alerts, onDismiss }: SystemAlertOverlayProp
         return (
           <div
             key={alert.id}
-            className={`pointer-events-auto animate-alert-pop rounded-md border backdrop-blur-xl px-4 py-3 ${styles}`}
+            className={`pointer-events-auto animate-alert-pop rounded-md border px-4 py-3 shadow-[0_14px_32px_rgba(3,7,14,0.65)] backdrop-blur-md ${styles}`}
           >
             <div className="flex items-start gap-3">
-              <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/10">
-                <Icon className="h-4 w-4" />
+              <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded border ${badgeColor}`}>
+                <Icon className="h-3.5 w-3.5" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="font-hud text-[11px] font-bold tracking-widest uppercase opacity-90">
+                <div className="font-hud text-[11px] font-bold tracking-[0.14em] uppercase opacity-90">
                   [{alert.title}]
                 </div>
-                <p className="mt-0.5 text-sm leading-snug font-medium">{alert.message}</p>
+                <p className="mt-0.5 text-sm leading-snug font-medium text-slate-100">{alert.message}</p>
               </div>
               <button
                 onClick={() => onDismiss(alert.id)}
-                className="rounded p-1 opacity-60 transition hover:bg-white/10 hover:opacity-100"
+                className="rounded p-1 text-slate-400 transition hover:bg-white/[0.06] hover:text-white"
                 aria-label="ปิดการแจ้งเตือน"
               >
                 <X className="h-3.5 w-3.5" />

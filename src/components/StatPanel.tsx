@@ -28,28 +28,28 @@ export function StatPanel({
   const hasPoints = activeStats.statPoints > 0
 
   return (
-    <div className="sao-panel rounded-xl p-4">
+    <div className="sao-panel rounded-md p-4">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-cyan-200/20 pb-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/12 pb-2.5">
         <div className="flex items-center gap-2">
-          <Activity className="h-4 w-4 text-cyan-300" />
+          <Activity className="h-4 w-4 text-[#e3a024]" />
           <div>
-            <h3 className="font-hud text-xs font-bold tracking-widest text-cyan-100 uppercase">
+            <h3 className="font-hud text-xs font-bold tracking-[0.14em] text-slate-200 uppercase">
               Character Stats
             </h3>
-            <div className="text-[10px] text-sky-200/80">{archetype}</div>
+            <div className="text-[10px] text-slate-400">{archetype}</div>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <div
-            className={`font-hud flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-bold transition ${
+            className={`font-hud flex items-center gap-1 rounded border px-2.5 py-1 text-[11px] font-bold transition ${
               hasPoints
-                ? 'border-amber-300/80 bg-amber-400/20 text-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.35)]'
-                : 'border-white/15 bg-slate-900/60 text-slate-400'
+                ? 'border-[#e3a024]/60 bg-[#e3a024]/15 text-amber-200'
+                : 'border-slate-300/15 bg-white/[0.03] text-slate-400'
             }`}
           >
-            {hasPoints && <Sparkles className="h-3 w-3 text-amber-300" />}
+            {hasPoints && <Sparkles className="h-3 w-3 text-[#e3a024]" />}
             <span>แต้มคงเหลือ: {activeStats.statPoints}</span>
           </div>
 
@@ -58,7 +58,7 @@ export function StatPanel({
               type="button"
               onClick={onResetStats}
               title="รีเซ็ตแต้ม Stat ทั้งหมดคืน"
-              className="flex items-center gap-1 rounded border border-white/15 bg-white/5 px-2 py-1 text-[10px] text-slate-300 hover:border-rose-300/40 hover:bg-rose-500/15 hover:text-rose-100"
+              className="flex items-center gap-1 rounded border border-slate-300/15 bg-white/[0.04] px-2 py-1 text-[10px] text-slate-300 hover:border-rose-400/40 hover:bg-rose-500/15 hover:text-rose-200"
             >
               <RotateCcw className="h-3 w-3" />
               รีเซ็ต
@@ -67,27 +67,27 @@ export function StatPanel({
         </div>
       </div>
 
-      {/* 6 Primary Attributes Grid */}
+      {/* 6 Primary Attributes */}
       <div className="mt-3 grid grid-cols-2 gap-2">
         {STAT_META.map((meta) => {
           const val = activeStats.attributes[meta.key]
           return (
             <div
               key={meta.key}
-              className="flex flex-col justify-between rounded-lg border border-white/10 bg-slate-900/60 px-2.5 py-2 transition hover:border-cyan-300/35"
+              className="flex flex-col justify-between rounded border border-slate-300/10 bg-white/[0.025] px-2.5 py-2 transition hover:border-slate-300/25"
             >
               <div className="flex items-center justify-between gap-1">
                 <div>
-                  <span className={`font-hud text-xs font-extrabold ${meta.colorClass}`}>
+                  <span className={`font-hud text-xs font-bold ${meta.colorClass}`}>
                     {meta.key}
                   </span>
-                  <span className="ml-1.5 text-[10px] text-slate-300">{meta.label}</span>
+                  <span className="ml-1.5 text-[10px] text-slate-400">{meta.label}</span>
                 </div>
-                <span className="font-hud text-sm font-bold text-white">{val}</span>
+                <span className="font-hud text-sm font-bold text-slate-100">{val}</span>
               </div>
 
               <div className="mt-1.5 flex items-center justify-between gap-1">
-                <span className="truncate text-[9px] text-slate-400" title={meta.effectDesc}>
+                <span className="truncate text-[9px] text-slate-500" title={meta.effectDesc}>
                   {meta.effectDesc}
                 </span>
 
@@ -96,7 +96,7 @@ export function StatPanel({
                     <button
                       type="button"
                       onClick={() => onAllocateStat(meta.key, 5)}
-                      className="rounded border border-amber-300/50 bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-bold text-amber-200 transition hover:bg-amber-400/30"
+                      className="rounded border border-[#e3a024]/50 bg-[#e3a024]/15 px-1.5 py-0.5 text-[9px] font-bold text-amber-200 transition hover:bg-[#e3a024]/30"
                       title={`อัป ${meta.key} +5`}
                     >
                       +5
@@ -108,8 +108,8 @@ export function StatPanel({
                     onClick={() => onAllocateStat(meta.key, 1)}
                     className={`flex h-5 w-5 items-center justify-center rounded border text-xs font-bold transition ${
                       hasPoints
-                        ? 'border-cyan-300/60 bg-cyan-500/20 text-cyan-100 hover:bg-cyan-400/40'
-                        : 'cursor-not-allowed border-white/10 bg-slate-950/50 text-slate-600'
+                        ? 'border-slate-300/35 bg-white/10 text-slate-100 hover:border-[#e3a024] hover:bg-[#e3a024]/25'
+                        : 'cursor-not-allowed border-slate-300/10 bg-transparent text-slate-600'
                     }`}
                     aria-label={`อัป ${meta.key} +1`}
                   >
@@ -122,27 +122,27 @@ export function StatPanel({
         })}
       </div>
 
-      {/* Derived Combat Power Summary */}
-      <div className="mt-3 grid grid-cols-5 gap-1.5 rounded-lg border border-white/10 bg-slate-950/55 px-2.5 py-2 text-center">
+      {/* Derived Combat Power */}
+      <div className="mt-3 grid grid-cols-5 gap-1.5 rounded border border-slate-300/10 bg-[#0b1018] px-2.5 py-2 text-center">
         <div>
-          <div className="text-[9px] text-slate-400">ATK</div>
-          <div className="font-hud text-[11px] font-bold text-rose-200">{derived.physAtk}</div>
+          <div className="text-[9px] text-slate-500">ATK</div>
+          <div className="font-hud text-[11px] font-bold text-slate-200">{derived.physAtk}</div>
         </div>
         <div>
-          <div className="text-[9px] text-slate-400">SKILL</div>
-          <div className="font-hud text-[11px] font-bold text-sky-200">{derived.skillAtk}</div>
+          <div className="text-[9px] text-slate-500">SKILL</div>
+          <div className="font-hud text-[11px] font-bold text-slate-200">{derived.skillAtk}</div>
         </div>
         <div>
-          <div className="text-[9px] text-slate-400">DEF</div>
-          <div className="font-hud text-[11px] font-bold text-amber-200">{derived.def}</div>
+          <div className="text-[9px] text-slate-500">DEF</div>
+          <div className="font-hud text-[11px] font-bold text-slate-200">{derived.def}</div>
         </div>
         <div>
-          <div className="text-[9px] text-slate-400">CRIT</div>
-          <div className="font-hud text-[11px] font-bold text-pink-200">{derived.critPct}%</div>
+          <div className="text-[9px] text-slate-500">CRIT</div>
+          <div className="font-hud text-[11px] font-bold text-amber-300">{derived.critPct}%</div>
         </div>
         <div>
-          <div className="text-[9px] text-slate-400">EVA</div>
-          <div className="font-hud text-[11px] font-bold text-emerald-200">{derived.evaPct}%</div>
+          <div className="text-[9px] text-slate-500">EVA</div>
+          <div className="font-hud text-[11px] font-bold text-emerald-300">{derived.evaPct}%</div>
         </div>
       </div>
     </div>

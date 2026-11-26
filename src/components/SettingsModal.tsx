@@ -95,16 +95,16 @@ export function SettingsModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-md">
-      <div className="sao-panel w-full max-w-2xl rounded-2xl p-6 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between border-b border-cyan-200/20 pb-3">
-          <h2 className="font-hud text-base font-bold tracking-wider text-white uppercase">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#06090e]/82 p-4 backdrop-blur-sm">
+      <div className="sao-panel max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg p-6">
+        <div className="flex items-center justify-between border-b border-slate-300/15 pb-3.5">
+          <h2 className="font-hud text-base font-bold tracking-[0.14em] text-white uppercase">
             Cardinal Settings &amp; Save Data
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-300 hover:bg-white/10 hover:text-white"
+            className="rounded p-1.5 text-slate-400 transition hover:bg-white/[0.06] hover:text-white"
           >
             <X className="h-4 w-4" />
           </button>
@@ -113,8 +113,8 @@ export function SettingsModal({
         {/* Gemini API Configuration */}
         <div className="mt-5 space-y-4">
           <div>
-            <label className="font-hud flex items-center gap-1.5 text-xs font-semibold tracking-wider text-cyan-200 uppercase">
-              <KeyRound className="h-3.5 w-3.5" />
+            <label className="font-hud flex items-center gap-1.5 text-xs font-semibold tracking-[0.12em] text-slate-300 uppercase">
+              <KeyRound className="h-3.5 w-3.5 text-[#e3a024]" />
               Gemini API Key (เก็บเฉพาะในเบราว์เซอร์ของคุณ)
             </label>
             <div className="mt-2 flex gap-2">
@@ -123,12 +123,12 @@ export function SettingsModal({
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder="AIzaSy..."
-                className="flex-1 rounded-lg border border-cyan-200/30 bg-slate-950/70 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-cyan-400 focus:outline-none"
+                className="flex-1 rounded border border-slate-300/20 bg-[#0b1018] px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-[#e3a024] focus:outline-none"
               />
               <button
                 type="button"
                 onClick={() => setShowKey(!showKey)}
-                className="rounded-lg border border-white/15 bg-white/5 px-3 text-slate-300 hover:bg-white/15"
+                className="rounded border border-slate-300/20 bg-white/[0.04] px-3 text-slate-300 transition hover:bg-white/[0.1]"
               >
                 {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -136,8 +136,8 @@ export function SettingsModal({
           </div>
 
           <div>
-            <label className="font-hud flex items-center gap-1.5 text-xs font-semibold tracking-wider text-cyan-200 uppercase">
-              <Cpu className="h-3.5 w-3.5" />
+            <label className="font-hud flex items-center gap-1.5 text-xs font-semibold tracking-[0.12em] text-slate-300 uppercase">
+              <Cpu className="h-3.5 w-3.5 text-[#e3a024]" />
               เลือกโมเดล Gemini (รองรับรุ่น 4, 3.8, 2.5 และ Custom ID)
             </label>
             <div className="mt-2 grid max-h-56 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
@@ -149,12 +149,10 @@ export function SettingsModal({
                     key={preset.id}
                     type="button"
                     onClick={() => setModel(preset.id)}
-                    className={`rounded-lg border p-2.5 text-left transition ${
+                    className={`rounded-md border p-2.5 text-left transition ${
                       selected
-                        ? isG4
-                          ? 'border-cyan-300 bg-cyan-400/20 text-white shadow-[0_0_12px_rgba(56,189,248,0.22)]'
-                          : 'border-amber-300 bg-amber-400/20 text-white'
-                        : 'border-white/15 bg-slate-900/50 text-slate-300 hover:border-white/30'
+                        ? 'border-[#e3a024] bg-[#e3a024]/15 text-white'
+                        : 'border-slate-300/15 bg-[#0b1018] text-slate-300 hover:border-slate-300/35'
                     }`}
                   >
                     <div className="flex items-center justify-between gap-1.5">
@@ -162,14 +160,14 @@ export function SettingsModal({
                       <span
                         className={`rounded px-1.5 py-0.5 text-[9px] font-bold ${
                           isG4
-                            ? 'bg-cyan-400/25 text-cyan-200'
-                            : 'bg-white/10 text-slate-300'
+                            ? 'bg-[#e3a024]/20 text-[#f0c05e]'
+                            : 'bg-white/[0.08] text-slate-300'
                         }`}
                       >
                         {preset.generation}
                       </span>
                     </div>
-                    <div className="mt-0.5 font-mono text-[10px] text-cyan-200/80">
+                    <div className="mt-0.5 font-mono text-[10px] text-slate-400">
                       {preset.id}
                     </div>
                     <div className="mt-0.5 text-[11px] opacity-80">{preset.desc}</div>
@@ -181,14 +179,14 @@ export function SettingsModal({
             {/* Custom Model ID Input + Fetch from API Key */}
             <div className="mt-2.5 space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <label className="block text-[11px] text-slate-300">
+                <label className="block text-[11px] text-slate-400">
                   หรือพิมพ์ Model ID เองโดยตรง (เช่น <code>gemini-4-hydrogen</code>, <code>gemini-2.5-flash</code>):
                 </label>
                 <button
                   type="button"
                   disabled={fetchingModels || !apiKey.trim()}
                   onClick={() => void handleFetchModels()}
-                  className="flex items-center gap-1 rounded border border-cyan-300/40 bg-cyan-500/15 px-2.5 py-1 text-[11px] font-semibold text-cyan-100 hover:bg-cyan-400/25 disabled:opacity-45"
+                  className="flex items-center gap-1 rounded border border-[#e3a024]/45 bg-[#e3a024]/12 px-2.5 py-1 text-[11px] font-semibold text-[#f0c05e] transition hover:bg-[#e3a024]/22 disabled:opacity-45"
                 >
                   {fetchingModels ? (
                     <Loader2 className="h-3 w-3 animate-spin" />
@@ -203,15 +201,15 @@ export function SettingsModal({
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
                 placeholder="gemini-4-hydrogen"
-                className="w-full rounded-lg border border-cyan-200/25 bg-slate-950/70 px-3 py-1.5 font-mono text-xs text-cyan-100 placeholder-slate-500 focus:border-cyan-400 focus:outline-none"
+                className="w-full rounded border border-slate-300/20 bg-[#0b1018] px-3 py-1.5 font-mono text-xs text-slate-100 placeholder-slate-500 focus:border-[#e3a024] focus:outline-none"
               />
               {fetchError && (
-                <div className="rounded border border-rose-400/40 bg-rose-500/15 px-2.5 py-1.5 text-[11px] text-rose-200">
+                <div className="rounded border border-rose-400/35 bg-rose-500/12 px-2.5 py-1.5 text-[11px] text-rose-200">
                   {fetchError}
                 </div>
               )}
               {fetchedModels.length > 0 && (
-                <div className="rounded-lg border border-emerald-300/35 bg-emerald-500/10 p-2.5">
+                <div className="rounded-md border border-emerald-400/30 bg-emerald-500/10 p-2.5">
                   <div className="mb-1.5 text-[11px] font-semibold text-emerald-200">
                     โมเดลที่ API Key ของคุณใช้งานได้จริง ({fetchedModels.length}) — คลิกเพื่อเลือก:
                   </div>
@@ -223,8 +221,8 @@ export function SettingsModal({
                         onClick={() => setModel(id)}
                         className={`rounded border px-2 py-0.5 font-mono text-[10px] transition ${
                           model === id
-                            ? 'border-cyan-300 bg-cyan-400/30 text-white'
-                            : 'border-white/15 bg-slate-950/60 text-slate-200 hover:border-cyan-300/50'
+                            ? 'border-[#e3a024] bg-[#e3a024]/20 text-white'
+                            : 'border-slate-300/15 bg-[#0b1018] text-slate-200 hover:border-[#e3a024]/50'
                         }`}
                       >
                         {id}
@@ -236,10 +234,10 @@ export function SettingsModal({
             </div>
           </div>
 
-          <label className="flex cursor-pointer items-center justify-between rounded-lg border border-white/15 bg-slate-900/50 px-4 py-3">
+          <label className="flex cursor-pointer items-center justify-between rounded-md border border-slate-300/15 bg-[#0b1018] px-4 py-3">
             <div>
-              <div className="text-xs font-bold text-emerald-200">
-                ⚡ โหมดตอบไว (Fast Response — ลดเวลาคิดของ AI)
+              <div className="text-xs font-bold text-emerald-300">
+                โหมดตอบไว (Fast Response — ลดเวลาคิดของ AI)
               </div>
               <div className="text-[11px] text-slate-400">
                 ลด Thinking Level/Budget ลงเพื่อให้เริ่มพิมพ์ข้อความตอบในไม่กี่วินาที (แนะนำเปิดไว้)
@@ -249,14 +247,14 @@ export function SettingsModal({
               type="checkbox"
               checked={fastMode}
               onChange={(e) => setFastMode(e.target.checked)}
-              className="h-4 w-4 accent-emerald-400"
+              className="h-4 w-4 accent-[#e3a024]"
             />
           </label>
 
-          <label className="flex cursor-pointer items-center justify-between rounded-lg border border-white/15 bg-slate-900/50 px-4 py-3">
+          <label className="flex cursor-pointer items-center justify-between rounded-md border border-slate-300/15 bg-[#0b1018] px-4 py-3">
             <div>
-              <div className="text-xs font-bold text-pink-200">
-                📸 สุ่มส่งภาพ Event CG อัตโนมัติ (แต่งงาน / เดินเล่น / อยู่ด้วยกัน)
+              <div className="text-xs font-bold text-slate-100">
+                สุ่มส่งภาพ Event CG อัตโนมัติ (แต่งงาน / เดินเล่น / อยู่ด้วยกัน)
               </div>
               <div className="text-[11px] text-slate-400">
                 เจนภาพตัวละครแนวนิยายภาพในฉากขอแต่งงาน (100%) และสุ่มส่งในฉากออกเดต/เดินเล่น/พักผ่อน
@@ -266,19 +264,19 @@ export function SettingsModal({
               type="checkbox"
               checked={autoEventImages}
               onChange={(e) => setAutoEventImages(e.target.checked)}
-              className="h-4 w-4 accent-pink-400"
+              className="h-4 w-4 accent-[#e3a024]"
             />
           </label>
 
           {autoEventImages && (
-            <div className="rounded-lg border border-pink-300/25 bg-slate-900/50 px-4 py-2.5">
-              <label className="block text-[11px] font-semibold text-pink-200">
+            <div className="rounded-md border border-slate-300/15 bg-[#0b1018] px-4 py-2.5">
+              <label className="block text-[11px] font-semibold text-slate-300">
                 โมเดลสร้างภาพ Event CG (แนะนำใช้ auto เพื่อให้ระบบเลือกโมเดลที่คีย์รองรับ)
               </label>
               <select
                 value={imageModel}
                 onChange={(e) => setImageModel(e.target.value)}
-                className="mt-1.5 w-full rounded border border-white/15 bg-slate-950/80 px-2.5 py-1.5 font-mono text-xs text-slate-100 focus:border-pink-400 focus:outline-none"
+                className="mt-1.5 w-full rounded border border-slate-300/20 bg-[#121923] px-2.5 py-1.5 font-mono text-xs text-slate-100 focus:border-[#e3a024] focus:outline-none"
               >
                 <option value="auto">auto (Gemini → SD 3.5 Turbo ~4วิ → FLUX.1 → AI Horde)</option>
                 <option value="hf-sd35-turbo">hf-sd35-turbo (ฟรี! SD 3.5 Large Turbo ~4–5 วินาที)</option>
@@ -291,9 +289,9 @@ export function SettingsModal({
             </div>
           )}
 
-          <label className="flex cursor-pointer items-center justify-between rounded-lg border border-white/15 bg-slate-900/50 px-4 py-3">
+          <label className="flex cursor-pointer items-center justify-between rounded-md border border-slate-300/15 bg-[#0b1018] px-4 py-3">
             <div>
-              <div className="text-xs font-bold text-amber-200">
+              <div className="text-xs font-bold text-[#f0c05e]">
                 เปิดโหมดทดลอง (Offline Demo Mode)
               </div>
               <div className="text-[11px] text-slate-400">
@@ -304,15 +302,15 @@ export function SettingsModal({
               type="checkbox"
               checked={demoMode}
               onChange={(e) => setDemoMode(e.target.checked)}
-              className="h-4 w-4 accent-cyan-400"
+              className="h-4 w-4 accent-[#e3a024]"
             />
           </label>
         </div>
 
         {/* Save Slots */}
-        <div className="mt-6 border-t border-cyan-200/20 pt-5">
+        <div className="mt-6 border-t border-slate-300/15 pt-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h3 className="font-hud text-xs font-bold tracking-wider text-cyan-200 uppercase">
+            <h3 className="font-hud text-xs font-bold tracking-[0.12em] text-slate-300 uppercase">
               Save Slots (บันทึกความจำ LocalStorage)
             </h3>
             <div className="flex items-center gap-1.5">
@@ -323,7 +321,7 @@ export function SettingsModal({
                     onClose()
                     onOpenTransfer()
                   }}
-                  className="flex items-center gap-1 rounded border border-pink-300/45 bg-pink-500/20 px-2.5 py-1 text-[11px] font-semibold text-pink-100 hover:bg-pink-500/35"
+                  className="flex items-center gap-1 rounded border border-[#e3a024]/45 bg-[#e3a024]/15 px-2.5 py-1 text-[11px] font-semibold text-[#f0c05e] transition hover:bg-[#e3a024]/25"
                 >
                   <ArrowRightLeft className="h-3 w-3" />
                   ย้ายเซฟข้ามภาค
@@ -333,7 +331,7 @@ export function SettingsModal({
                 <button
                   type="button"
                   onClick={handleExportSession}
-                  className="flex items-center gap-1 rounded border border-white/20 bg-white/10 px-2.5 py-1 text-[11px] text-slate-200 hover:bg-white/20"
+                  className="flex items-center gap-1 rounded border border-slate-300/20 bg-white/[0.05] px-2.5 py-1 text-[11px] text-slate-200 transition hover:bg-white/[0.1]"
                 >
                   <Download className="h-3 w-3" />
                   Export JSON
@@ -348,7 +346,7 @@ export function SettingsModal({
               return (
                 <div
                   key={slotId}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/12 bg-slate-900/55 px-3.5 py-2.5 text-xs"
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-slate-300/15 bg-[#0b1018] px-3.5 py-2.5 text-xs"
                 >
                   <div>
                     <div className="font-semibold text-white">
@@ -374,7 +372,7 @@ export function SettingsModal({
                             `${currentSession.profile.name} (${currentSession.worldState.world_arc})`
                           )
                         }
-                        className="flex items-center gap-1 rounded border border-cyan-300/40 bg-cyan-500/15 px-2.5 py-1 text-[11px] text-cyan-100 hover:bg-cyan-400/30"
+                        className="flex items-center gap-1 rounded border border-[#e3a024]/40 bg-[#e3a024]/15 px-2.5 py-1 text-[11px] text-[#f0c05e] transition hover:bg-[#e3a024]/25"
                       >
                         <Save className="h-3 w-3" />
                         บันทึกทับ
@@ -388,7 +386,7 @@ export function SettingsModal({
                             onLoadFromSlot(existing)
                             onClose()
                           }}
-                          className="flex items-center gap-1 rounded border border-emerald-300/40 bg-emerald-500/15 px-2.5 py-1 text-[11px] text-emerald-100 hover:bg-emerald-400/30"
+                          className="flex items-center gap-1 rounded border border-emerald-400/35 bg-emerald-500/12 px-2.5 py-1 text-[11px] text-emerald-200 transition hover:bg-emerald-500/22"
                         >
                           <FolderOpen className="h-3 w-3" />
                           โหลด
@@ -396,7 +394,7 @@ export function SettingsModal({
                         <button
                           type="button"
                           onClick={() => onDeleteSlot(slotId)}
-                          className="rounded border border-rose-300/30 bg-rose-500/15 p-1 text-rose-200 hover:bg-rose-500/30"
+                          className="rounded border border-rose-400/30 bg-rose-500/12 p-1 text-rose-200 transition hover:bg-rose-500/25"
                           aria-label="ลบเซฟ"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -410,18 +408,18 @@ export function SettingsModal({
           </div>
         </div>
 
-        <div className="mt-6 flex justify-end gap-2 border-t border-white/10 pt-4">
+        <div className="mt-6 flex justify-end gap-2 border-t border-slate-300/12 pt-4">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-white/15 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-white/10"
+            className="rounded border border-slate-300/20 bg-white/[0.04] px-4 py-2 text-xs font-semibold text-slate-300 transition hover:bg-white/[0.08]"
           >
             ยกเลิก
           </button>
           <button
             type="button"
             onClick={handleApplySettings}
-            className="font-hud rounded-lg border border-cyan-200/70 bg-gradient-to-r from-cyan-500 to-sky-400 px-5 py-2 text-xs font-bold tracking-wider text-slate-950 uppercase"
+            className="font-hud rounded border border-[#f5be58]/60 bg-[#e3a024] px-5 py-2 text-xs font-bold tracking-[0.14em] text-slate-950 uppercase transition hover:bg-[#f0b43c]"
           >
             บันทึกการตั้งค่า
           </button>
