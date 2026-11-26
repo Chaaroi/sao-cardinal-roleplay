@@ -209,7 +209,7 @@ export function detectOstSituation(params: {
   }
 
   if (
-    /เศร้า|ร้องไห้|น้ำตา|จากลา|สูญเสีย|ปวดใจ|grief|sorrow|tears/.test(
+    /เศร้า|ร้องไห้|น้ำตา(?!ล)|จากลา|สูญเสีย|ปวดใจ|grief|sorrow|\btears\b/.test(
       `${recentCombined} ${sceneMoods}`
     )
   ) {

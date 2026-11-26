@@ -26,34 +26,93 @@ function sanitizeJsonString(raw: string): string {
     .replace(/,\s*([}\]])/g, '$1')
 }
 
-/**
- * Extracts suggested numbered or bulleted action choices at the end of the narrative.
- */
-export function extractChoicesFromNarrative(narrative: string): string[] {
-  const lines = narrative.split('\n')
-  const choices: string[] = []
+function isChoicePromptHeaderLine(trimmed: string): boolean {
+  const clean = trimmed.replace(/\*\*/g, '').replace(/[:：]/g, '').trim()
+  return (
+    clean.startsWith('คุณจะทำอย่างไร') ||
+    clean.startsWith('ทางเลือก') ||
+    clean.startsWith('เลือกการกระทำ') ||
+    clean.includes('พิมพ์คำสั่งเองอย่างอิสระ')
+  )
+}
 
-  // Scan from bottom up around the final choices section
-  for (let i = Math.max(0, lines.length - 14); i < lines.length; i++) {
-    const line = lines[i].trim()
-    const match = line.match(/^(?:\d+[.)]|[-*•])\s+(?:\*\*)?(.+?)(?:\*\*)?$/)
-    if (match && match[1]) {
-      const cleaned = match[1].replace(/\*\*/g, '').trim()
-      const lowerCleaned = cleaned.toLowerCase()
-      if (
-        cleaned.length >= 4 &&
-        cleaned.length <= 160 &&
-        !cleaned.startsWith('หมายเหตุ') &&
-        !lowerCleaned.includes('json_state') &&
-        !cleaned.includes('พิมพ์การกระทำหรือบทสนทนา') &&
-        !cleaned.includes('พิมพ์คำสั่งเอง')
-      ) {
-        choices.push(cleaned)
+function isPlaceholderChoice(cleaned: string): boolean {
+  const lower = cleaned.toLowerCase()
+  return (
+    cleaned.length < 4 ||
+    cleaned.length > 180 ||
+    cleaned.startsWith('หมายเหตุ') ||
+    lower.includes('json_state') ||
+    cleaned.includes('พิมพ์การกระทำหรือบทสนทนา') ||
+    cleaned.includes('พิมพ์คำสั่งเอง')
+  )
+}
+
+/**
+ * Extracts trailing numbered/bulleted choices from the end of the narrative AND strips
+ * that trailing choice block (and any intro prompt line above it) so choices render ONLY
+ * in the dedicated bottom choice buttons instead of duplicating inside the story prose.
+ */
+export function splitNarrativeAndChoices(narrative: string): {
+  cleanNarrative: string
+  choices: string[]
+} {
+  const lines = narrative.split('\n')
+  let end = lines.length - 1
+  while (end >= 0 && lines[end].trim() === '') {
+    end--
+  }
+
+  const collected: string[] = []
+  let idx = end
+
+  while (idx >= 0) {
+    const trimmed = lines[idx].trim()
+    if (!trimmed) {
+      // Allow single blank lines between choice items once we've started collecting
+      if (collected.length > 0 && idx > 0 && lines[idx - 1].trim().match(/^(?:\d+[.)]|[-*•])\s+/)) {
+        idx--
+        continue
       }
+      break
+    }
+
+    const match = trimmed.match(/^(?:\d+[.)]|[-*•])\s+(?:\*\*)?(.+?)(?:\*\*)?$/)
+    if (!match || !match[1]) {
+      break
+    }
+
+    const cleaned = match[1].replace(/\*\*/g, '').trim()
+    if (!isPlaceholderChoice(cleaned)) {
+      collected.unshift(cleaned)
+    } else if (cleaned.includes('พิมพ์การกระทำ') || cleaned.includes('พิมพ์คำสั่งเอง')) {
+      // Still strip placeholder lines from narrative even if not kept as a clickable button
+    } else {
+      break
+    }
+    idx--
+  }
+
+  // Only strip if we found a contiguous choice block at the bottom (at least 2 items or explicit prompt header)
+  if (collected.length >= 2 || (collected.length === 1 && idx >= 0 && isChoicePromptHeaderLine(lines[idx].trim()))) {
+    while (idx >= 0 && (lines[idx].trim() === '' || isChoicePromptHeaderLine(lines[idx].trim()))) {
+      idx--
+    }
+    const cleanNarrative = lines.slice(0, idx + 1).join('\n').trimEnd()
+    return {
+      cleanNarrative,
+      choices: collected.slice(0, 4),
     }
   }
 
-  return choices.slice(0, 4)
+  return {
+    cleanNarrative: narrative.trim(),
+    choices: [],
+  }
+}
+
+export function extractChoicesFromNarrative(narrative: string): string[] {
+  return splitNarrativeAndChoices(narrative).choices
 }
 
 function normalizeCharacter(raw: Partial<CharacterState>): CharacterState {
@@ -88,10 +147,9 @@ export function inferTierFromAffection(affection: number, isMarried = false): st
  */
 export function stripStreamingJsonBlock(partial: string): string {
   const idx = partial.search(/```(?:json_state|json)/i)
-  if (idx !== -1) {
-    return partial.slice(0, idx).trimEnd()
-  }
-  return partial
+  const withoutJson = idx !== -1 ? partial.slice(0, idx).trimEnd() : partial
+  // Also trim a trailing choice block while streaming if 2+ numbered choices have arrived
+  return splitNarrativeAndChoices(withoutJson).cleanNarrative
 }
 
 function normalizeShop(raw: unknown): ShopState | null {
@@ -219,11 +277,20 @@ export function parseCardinalResponse(rawResponse: string, fallbackState: WorldS
   }
 
   let parsedState: WorldState | null = null
+  let jsonChoices: string[] = []
   let parseWarning: string | undefined
 
   if (jsonCandidate) {
     try {
-      const parsed = JSON.parse(sanitizeJsonString(jsonCandidate)) as Partial<WorldState>
+      const parsed = JSON.parse(sanitizeJsonString(jsonCandidate)) as Partial<WorldState> & {
+        choices?: unknown
+      }
+      if (Array.isArray(parsed.choices)) {
+        jsonChoices = parsed.choices
+          .map((c) => String(c).trim())
+          .filter((c) => !isPlaceholderChoice(c))
+          .slice(0, 4)
+      }
       const rawPlayer = parsed.player ?? fallbackState.player
       const maxHp = typeof rawPlayer.max_hp === 'number' && rawPlayer.max_hp > 0 ? rawPlayer.max_hp : fallbackState.player.max_hp
       const hp = typeof rawPlayer.hp === 'number' ? Math.max(0, Math.min(maxHp, rawPlayer.hp)) : fallbackState.player.hp
@@ -267,10 +334,12 @@ export function parseCardinalResponse(rawResponse: string, fallbackState: WorldS
     parseWarning = 'ไม่พบ json_state จากคำตอบของ AI (ใช้ค่าสถานะล่าสุดแทน)'
   }
 
-  const choices = extractChoicesFromNarrative(narrative)
+  const split = splitNarrativeAndChoices(narrative)
+  const finalChoices = jsonChoices.length > 0 ? jsonChoices : split.choices
+
   return {
-    narrative,
-    choices,
+    narrative: split.cleanNarrative,
+    choices: finalChoices,
     worldState: parsedState,
     parseWarning,
   }

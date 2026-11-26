@@ -18,6 +18,7 @@ import {
   X,
 } from 'lucide-react'
 import type { ChatMessage, DiceChallenge, EventCG, ShopState } from '../types/game'
+import { splitNarrativeAndChoices } from '../utils/jsonStateParser'
 import { CharacterAvatar } from './CharacterAvatar'
 
 interface ChatPanelProps {
@@ -132,9 +133,11 @@ export function ChatPanel({
                   </div>
                 )}
 
-                {/* Light Novel Narrative */}
+                {/* Light Novel Narrative (keep suggested choices out of prose body) */}
                 <div className="sao-markdown text-[15px] leading-[1.85] text-[#e9ecf2]">
-                  <ReactMarkdown>{msg.text}</ReactMarkdown>
+                  <ReactMarkdown>
+                    {splitNarrativeAndChoices(msg.text).cleanNarrative}
+                  </ReactMarkdown>
                 </div>
 
                 {/* Event CG Frame */}
